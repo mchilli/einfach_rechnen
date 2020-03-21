@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="de" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title>Mathe</title>
+        <style media="screen">
+            :root {
+                --success-color: #4CAF50;
+                --failure-color: #F44336;
+                --result-color: #FFC107;
+                --option-color: #2196F3;
+                --contrast-color: #212121;
+            }
+            html {
+                font-family: sans-serif;
+            }
+            body {
+                width: 100vw;
+                height: 100vh;
+                margin: 0;
+                line-height: 1;
+            }
+
+            .header {
+                display: grid;
+                grid-template-columns: 320px auto minmax(auto, 480px);
+                place-items: center;
+                height: 60px;
+                margin: 0 5px;
+                font-size: 40px;
+            }
+            .header .options {
+                height: 100%;
+                width: 100%;
+                font-size: 20px;
+                font-weight: bold;
+                display: grid;
+                grid-template-columns: repeat(9, auto);
+                grid-column-gap: 4px;
+                place-items: center;
+            }
+            .header .options label {
+                justify-self: end;
+            }
+            .header .options input[type="checkbox"] {
+                margin: 0px;
+                cursor: pointer;
+                border: 1px solid;
+                height: 15px;
+                width: 15px;
+                -webkit-appearance: none;
+                box-shadow: 2px 2px 0 var(--contrast-color);
+            }
+            .header .options input[type="checkbox"]:checked {
+                background-color: var(--option-color);
+            }
+            .header .options input[type="checkbox"]:checked::after {
+                content: '';
+                display: block;
+                position: relative;
+                left: 4px;
+                top: 2px;
+                width: 3px;
+                height: 6px;
+                border: solid var(--contrast-color);
+                border-width: 0px 2px 2px 0;
+                -webkit-transform: rotate(45deg);
+                -ms-transform: rotate(45deg);
+                transform: rotate(45deg);
+            }
+            .header .options input[type="number"]{
+                width: 50px;
+                font-family: sans-serif;
+                font-weight: bold;
+                background-color: var(--option-color);
+                border: 1px solid var(--contrast-color);
+                box-shadow: 2px 2px 0 var(--contrast-color);
+            }
+            .header .options button {
+                grid-column: 9 / 10;
+                grid-row: 1 / 3;
+                -webkit-appearance: none;
+                cursor: pointer;
+                height: 48px;
+                margin: 5px;
+                font-weight: bold;
+                background-color: var(--option-color);
+                border: 1px solid var(--contrast-color);
+                box-shadow: 2px 2px 0 var(--contrast-color);
+            }
+
+            .calculation {
+                height: 90px;
+                text-align: center;
+                margin: 0 4px;
+                box-sizing: border-box;
+                font-size: 40px;
+                font-weight: bold;
+                border: 2px solid var(--contrast-color);
+                border-top-left-radius: 20px;
+                border-bottom-left-radius: 50px;
+                border-top-right-radius: 20px;
+                border-bottom-right-radius: 50px;
+            }
+            .calculation.success{
+                background-color: var(--success-color);
+            }
+            .calculation.failure{
+                background-color: var(--failure-color);
+            }
+            .calculation.result{
+                font-weight: normal;
+                background-color: var(--result-color);
+            }
+            .calculation div {
+                display: inline-block;
+                font-size: 80px;
+            }
+
+            .history {
+                height: calc(100vh - 150px);
+                padding: 4px 50px 0 50px;
+                box-sizing: border-box;
+                font-size: 30px;
+                display: flex;
+                flex-wrap: wrap;
+                flex-direction: column;
+                align-content: flex-start;
+                overflow: auto;
+            }
+            .history div {
+                display: grid;
+                grid-template-columns: 48px auto;
+                place-items: center;
+                height: 48px;
+                margin-bottom: 4px;
+                margin-right: 4px;
+            }
+            .history div span{
+                display: grid;
+                place-items: center;
+                width: 100%;
+                height: 100%;
+                padding: 0 5px;
+                border: 2px solid var(--contrast-color);
+                box-sizing: border-box;
+            }
+            .history div span:first-child{
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 20px;
+                box-sizing: border-box;
+            }
+            .history div.success span:first-child{
+                background-color: var(--success-color);
+            }
+            .history div.failure span:first-child{
+                background-color: var(--failure-color);
+            }
+            .history div span:last-child{
+                border-left: unset;
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="score"></div>
+            <div class="counter"></div>
+            <div class="options">
+                <label for="plus">&plus;</label>
+                    <input type="checkbox" class="operator" checked name="plus" value="+">
+                <label for="minus">&minus;</label>
+                    <input type="checkbox" class="operator" checked name="minus" value="−">
+                <label for="runs">Runden:</label>
+                    <input type="number" class="runs" name="runs" value="20" min="3" max="50">
+                <label for="funmode">Elternfrei:</label>
+                    <input type="checkbox" class="funmode" name="funmode">
+                <button type="button" class="start" name="start" onclick="newGame();">RESET</button>
+                <label for="multiply">&times;</label>
+                    <input type="checkbox" class="operator" name="multiply" value="×">
+                <label for="divide">&divide;</label>
+                    <input type="checkbox" class="operator" name="divide" value="÷">
+                <label for="limit">Limit:</label>
+                    <input type="number" class="limit" name="limit" value="20" min="10" max="1000">
+                <label for="advanced">Schwer:</label>
+                    <input type="checkbox" class="advanced" name="advanced">
+            </div>
+        </div>
+        <div class="calculation"></div>
+        <div class="history"></div>
+        <script type="text/javascript">
+            // write DOM elements to variables
+            let headerDOM = document.getElementsByClassName('header')[0];
+            let scoreDOM = headerDOM.getElementsByClassName('score')[0];
+            let counterDOM = headerDOM.getElementsByClassName('counter')[0];
+            let optionsDOM = headerDOM.getElementsByClassName('options')[0];
+            let optionInputs = optionsDOM.getElementsByTagName('input');
+            let operatorsList = optionsDOM.getElementsByClassName('operator');
+            let startButton = optionsDOM.getElementsByClassName('start')[0];
+            let runsInput = optionsDOM.getElementsByClassName('runs')[0];
+            let limitInput = optionsDOM.getElementsByClassName('limit')[0];
+            let funmodeInput = optionsDOM.getElementsByClassName('funmode')[0];
+            let advancedInput = optionsDOM.getElementsByClassName('advanced')[0];
+            let calculationDOM = document.getElementsByClassName('calculation')[0];
+            let historyDOM = document.getElementsByClassName('history')[0];
+
+            // global calculation DOM elements
+            let operatorDOM, equalDOM, possibleInputs, searchedInput;
+            // global options
+            let success, count, maxRuns, limit, funmode, advanced;
+            // values for parental check
+            const PASSWD = '[212,211,204,222,225,219]'
+            const ENIGMA = 'apdiuvnashüoiasj'
+
+            // encrypt a given string
+            let encrypt = (content) => {
+                var result = []; var passLen = ENIGMA.length ;
+                for(var i = 0  ; i < content.length ; i++) {
+                    var passOffset = i%passLen ;
+                    var calAscii = (content.charCodeAt(i)+ENIGMA.charCodeAt(passOffset));
+                    result.push(calAscii);
+                }
+                return JSON.stringify(result) ;
+            }
+
+            // decrypt a given string
+            let decrypt = (content) => {
+                var result = [];var str = '';
+                var codesArr = JSON.parse(content);var passLen = ENIGMA.length ;
+                for(var i = 0  ; i < codesArr.length ; i++) {
+                    var passOffset = i%passLen ;
+                    var calAscii = (codesArr[i]-ENIGMA.charCodeAt(passOffset));
+                    result.push(calAscii) ;
+                }
+                for(var i = 0 ; i < result.length ; i++) {
+                    var ch = String.fromCharCode(result[i]); str += ch ;
+                }
+                return str ;
+            }
+
+            // write data to local storage
+            let writeLocalStorage = (key, content) => {
+                localStorage.setItem(key, content);
+            }
+
+            // read data from local storage
+            let readLocalStorage = (key) => {
+                return localStorage.getItem(key);
+            }
+
+            // remove key from local storage
+            let removeLocalStorage = (key) => {
+                localStorage.removeItem(key);
+            }
+
+            // initialize all necessary elements
+            let initializeGame = () => {
+                if (readLocalStorage('settings')) {
+                    restoreSettings();
+                } else {
+                    storeSettings();
+                }
+                operatorDOM = document.createElement('DIV');
+                equalDOM = document.createElement('DIV');
+                equalDOM.innerHTML = '=';
+                let firstDOM = document.createElement('DIV');
+                let secondDOM = document.createElement('DIV');
+                let resultDOM = document.createElement('DIV');
+                possibleInputs = [firstDOM, secondDOM, resultDOM];
+                startGame();
+            }
+
+            // check if the game starts for the first time else ask for password
+            let newGame = () => {
+                let storedHistory = JSON.parse(readLocalStorage('storedHistory'))
+                if (storedHistory) {
+                    if (funmode) {
+                        removeLocalStorage('storedHistory');
+                        startGame();
+                    } else {
+                        let response = prompt("Der \"Elternfrei\" Modus ist deaktiviert,\ndu brauchst das Passwort zum zurücksetzen?");
+                        if (response) {
+                            if (encrypt(response.toLowerCase()) === PASSWD) {
+                                removeLocalStorage('storedHistory');
+                                startGame();
+                            }
+                        }
+                    }
+                } else {
+                    startGame();
+                }
+            }
+
+            // start the game
+            let startGame = () => {
+                if (parseInt(runsInput.value) > parseInt(runsInput.max)) {
+                    runsInput.value = runsInput.max;
+                } else if (parseInt(runsInput.value) < parseInt(runsInput.min)) {
+                    runsInput.value = runsInput.min;
+                }
+                maxRuns = runsInput.value;
+                if (parseInt(limitInput.value) > parseInt(limitInput.max)) {
+                    limitInput.value = limitInput.max;
+                } else if (parseInt(limitInput.value) < parseInt(limitInput.min)) {
+                    limitInput.value = limitInput.min;
+                }
+                limit = limitInput.value;
+                funmode = false;
+                if (funmodeInput.checked) {
+                    funmode = true;
+                }
+                advanced = false;
+                if (advancedInput.checked) {
+                    advanced = true;
+                }
+
+                if (readLocalStorage('storedHistory')) {
+                    restoreHistory();
+                } else {
+                    success = 0;
+                    count = 0;
+                    createCalc(limit);
+                    historyDOM.innerHTML = '';
+                    calculationDOM.innerHTML = '';
+                    calculationDOM.classList.remove('result');
+                    calculationDOM.append(
+                        possibleInputs[0],
+                        operatorDOM,
+                        possibleInputs[1],
+                        equalDOM,
+                        possibleInputs[2]
+                    );
+                    updateScore();
+                    updateCounter();
+                    startButton.blur();
+                }
+
+                document.addEventListener('keydown', handleInput);
+                for (let input of optionInputs) {
+                    input.addEventListener('change', storeSettings);
+                }
+            }
+
+            // get the wanted operations for the calculation
+            let getOperations = () => {
+                let operators = [];
+                for (let item of operatorsList) {
+                    if (item.checked) {
+                        operators.push(item.value);
+                    }
+                }
+                return operators
+            }
+
+            // create a calculation
+            let createCalc = (limit) => {
+                let operators = getOperations();
+                let operator = operators[Math.floor((Math.random() * operators.length))];
+                let first, second, result;
+
+                do {
+                    second = Math.floor((Math.random() * limit));
+                    first = Math.floor((Math.random() * limit));
+                    switch (operator) {
+                        case '+':
+                            result = first + second;
+                            break;
+                        case '−':
+                            result = first - second;
+                            break;
+                        case '×':
+                            result = first * second;
+                            break;
+                        case '÷':
+                            result = first / second;
+                            break;
+                        default:
+                    }
+                }
+                while (
+                    (result > limit) ||
+                    (result < 0) ||
+                    (isNaN(result)) ||
+                    (result % 1 !== 0) ||
+                    (operator === '÷' && (first === 0 || second < 2)) ||
+                    (operator === '×' && (first < 2 || second < 2))
+                );
+
+                operatorDOM.innerHTML = operator;
+
+                let calculation = [first, second, result];
+                searchedInput = 2;
+                if (advanced) {
+                    searchedInput = Math.floor((Math.random() * 3));
+                }
+                for (var i = 0; i < possibleInputs.length; i++) {
+                    if (i === searchedInput) {
+                        possibleInputs[i].innerHTML = '_'
+                        continue
+                    }
+                    possibleInputs[i].innerHTML = calculation[i]
+                }
+            }
+
+            // update the score in the header
+            let updateScore = () => {
+                let failure = count - success;
+                let percent = 100;
+                if (count > 0) {
+                    percent = Math.floor((success * 100) / count);
+                }
+                // scoreDOM.innerHTML = `${success}/${count} ${failure} Fehler (${percent}%)`;
+                scoreDOM.innerHTML = `${failure} Fehler (${percent}%)`;
+            }
+
+            // update the counter in the header
+            let updateCounter = () => {
+                let max = maxRuns.toString().padStart(2, 0);
+                let counter;
+                if (success == max) {
+                    counter = (success).toString().padStart(2, 0);
+                } else {
+                    counter = (success + 1).toString().padStart(2, 0);
+                }
+                counterDOM.innerHTML = `${counter}/${max}`;
+            }
+
+            // check if the calculation is correct
+            let checkInput = (input) => {
+                let operator = operatorDOM.innerHTML;
+                let first = parseInt(possibleInputs[0].innerHTML);
+                let second = parseInt(possibleInputs[1].innerHTML);
+                let result = parseInt(possibleInputs[2].innerHTML);;
+
+                switch (operator) {
+                    case '+':
+                        check = first + second;
+                        break;
+                    case '−':
+                        check = first - second;
+                        break;
+                    case '×':
+                        check = first * second;
+                        break;
+                    case '÷':
+                        check = first / second;
+                        break;
+                    default:
+                }
+
+                if (result === check) {
+                    calculationDOM.classList.add('success');
+                    toHistory(true);
+                    success += 1;
+                    updateCounter();
+                    createCalc(limit);
+                } else {
+                    calculationDOM.classList.add('failure');
+                    toHistory(false);
+                }
+                count += 1;
+                updateScore();
+                storeHistory();
+                setTimeout(() => {
+                    calculationDOM.classList.remove('success', 'failure');
+                }, 300)
+                if (success >= maxRuns) {
+                    showResult();
+                }
+            }
+
+            // write the last calculation to the history
+            let toHistory = (correct) => {
+                let element = document.createElement('DIV');
+                let index = (success + 1).toString().padStart(2, 0);
+                element.innerHTML = `<span>${index}</span> <span>${possibleInputs[0].innerHTML}${operatorDOM.innerHTML}${possibleInputs[1].innerHTML}=${possibleInputs[2].innerHTML}</span>`;
+
+                if (correct) {
+                    element.classList.add('success');
+                } else {
+                    element.classList.add('failure');
+                }
+
+                let lastElem = historyDOM.getElementsByTagName('DIV')[0];
+                historyDOM.insertBefore(element, lastElem);
+
+                possibleInputs[searchedInput].innerHTML = '_';
+            }
+
+            // store the game to the localStorage
+            let storeHistory = () => {
+                let calculation = {
+                    first: possibleInputs[0].innerHTML,
+                    operator: operatorDOM.innerHTML,
+                    second: possibleInputs[1].innerHTML,
+                    result: possibleInputs[2].innerHTML,
+                    search: searchedInput
+                };
+                let data = {
+                    success: success,
+                    count: count,
+                    maxRuns: maxRuns,
+                    limit: limit,
+                    funmode: funmode,
+                    advanced: advanced,
+                };
+                let history = [];
+                let historyElements = historyDOM.getElementsByTagName('DIV');
+                for (var i = 0; i < historyElements.length; i++) {
+                    let elemClass = historyElements[i].classList;
+                    let elemHTML = historyElements[i].innerHTML;
+                    history.push({
+                        class: elemClass,
+                        html: elemHTML
+                    });
+                }
+                let storedHistory = {
+                    calculation: calculation,
+                    data: data,
+                    history: history
+                }
+                writeLocalStorage('storedHistory', JSON.stringify(storedHistory));
+            }
+
+            // restore the last calculation to the history
+            let restoreHistory = () => {
+                let storedHistory = JSON.parse(readLocalStorage('storedHistory'));
+                // restore calculation
+                possibleInputs[0].innerHTML = storedHistory.calculation.first;
+                operatorDOM.innerHTML = storedHistory.calculation.operator;
+                possibleInputs[1].innerHTML = storedHistory.calculation.second;
+                possibleInputs[2].innerHTML = storedHistory.calculation.result;
+                searchedInput = storedHistory.calculation.search;
+                // append elements to dom
+                calculationDOM.append(
+                    possibleInputs[0],
+                    operatorDOM,
+                    possibleInputs[1],
+                    equalDOM,
+                    possibleInputs[2]
+                );
+                // restore data
+                success = storedHistory.data.success;
+                count = storedHistory.data.count;
+                // restore history
+                for (var i = 0; i < storedHistory.history.length; i++) {
+                    let element = document.createElement('DIV');
+                    let index = storedHistory.history[i].html.split(' ')[0];
+                    element.innerHTML = `${storedHistory.history[i].html}`;
+
+                    element.classList.add(storedHistory.history[i].class[0]);
+                    historyDOM.append(element);
+                }
+                updateScore();
+                updateCounter();
+                if (success >= maxRuns) {
+                    showResult();
+                }
+            }
+
+            // shpw the results at the end of the game
+            let showResult = () => {
+                calculationDOM.classList.remove('success', 'failure');
+                let failure = count - success;
+                let percent = Math.floor((success * 100) / count);
+                let congrat = 'Versuch es doch noch einmal!';
+                if (failure === 0) {
+                    congrat = 'Das ist allererste Sahne!!!'
+                }
+                calculationDOM.classList.add('result');
+                calculationDOM.innerHTML = `Du hast ${failure} Fehler, das sind <b>${percent}%</b>! ${congrat}`;
+                document.removeEventListener('keydown', handleInput);
+            }
+
+            // handle keyboard inputs
+            let handleInput = (e) => {
+                // check if input element has focus to prevent wrong input
+                let activeButtons = [startButton];
+                let activeInputs = [runsInput, limitInput, startButton];
+                if (activeButtons.includes(document.activeElement)) {
+                    document.activeElement.blur();
+                } else if (activeInputs.includes(document.activeElement)) {
+                    return
+                }
+
+                let key = e.key;
+                if (!isNaN(key)) {
+                    if (possibleInputs[searchedInput].innerHTML === '_') {
+                        possibleInputs[searchedInput].innerHTML = ''
+                    }
+                    possibleInputs[searchedInput].innerHTML += key;
+                } else {
+                    let input;
+                    switch (key) {
+                        case 'Backspace':
+                            input = possibleInputs[searchedInput].innerHTML;
+                            if (input.length > 1) {
+                                possibleInputs[searchedInput].innerHTML = input.substring(0, input.length - 1);
+                            } else {
+                                possibleInputs[searchedInput].innerHTML = '_';
+                            }
+                            break;
+                        case 'Enter':
+                            input = possibleInputs[searchedInput].innerHTML;
+                            if (input !== '' && input !== '_') {
+                                checkInput(input)
+                            }
+                            break;
+                        default:
+                    }
+                }
+            }
+
+            // store the current settings
+            let storeSettings = (e) => {
+                let settings = {
+                    runs: runsInput.value,
+                    limit: limitInput.value,
+                    funmode: funmodeInput.checked,
+                    advanced: advancedInput.checked,
+                };
+                for (let item of operatorsList) {
+                    settings[item.name] = item.checked
+                }
+                writeLocalStorage('settings', JSON.stringify(settings));
+            }
+
+            // restore the last settings
+            let restoreSettings = () => {
+                let settings = JSON.parse(readLocalStorage('settings'));
+                for (let item in settings) {
+                    let element = optionsDOM.querySelector(`[name=${item}]`)
+                    if(typeof(settings[item]) === "boolean"){
+                        element.checked = settings[item];
+                    } else {
+                        element.value = settings[item]
+                    }
+                }
+            }
+
+            initializeGame();
+        </script>
+    </body>
+</html>
