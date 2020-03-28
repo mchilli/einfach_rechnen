@@ -10,6 +10,7 @@
                 --result-color: #FFC107;
                 --option-color: #2196F3;
                 --contrast-color: #212121;
+                --background-color: #FFFFFF;
             }
             html {
                 font-family: sans-serif;
@@ -161,6 +162,76 @@
                 border-top-right-radius: 10px;
                 border-bottom-right-radius: 20px;
             }
+            .dialog-wrapper {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                display: grid;
+                place-items: center;
+            }
+            .dialog-wrapper.invisible {
+                opacity: 0;
+            }
+            .dialog-header, .dialog-footer {
+                min-width: 200px;
+                min-height: 20px;
+                padding: 10px 20px;
+                background-color: var(--background-color);
+                border: 2px solid var(--contrast-color);
+                box-shadow: 2px 2px var(--contrast-color);
+            }
+            .dialog-header {
+                font-size: 30px;
+                font-weight: bold;
+                border-top-left-radius: 50px;
+                border-bottom-left-radius: 20px;
+                border-top-right-radius: 50px;
+                border-bottom-right-radius: 20px;
+            }
+            .dialog-content {
+                margin: 0 15px;
+                padding: 10px;
+                background-color: var(--background-color);
+                border-left: 2px solid var(--contrast-color);
+                border-right: 4px solid var(--contrast-color);
+            }
+            .dialog-input {
+                display: block;
+                margin: 10px auto;
+                font-size: inherit;
+                padding: 0 15px;
+                border: 2px solid var(--contrast-color);
+                border-radius: 20px;
+            }
+            .dialog-input:focus {
+                outline: unset;
+            }
+            .dialog-footer {
+                text-align: right;
+                border-top-left-radius: 20px;
+                border-bottom-left-radius: 50px;
+                border-top-right-radius: 20px;
+                border-bottom-right-radius: 50px;
+            }
+            .dialog-button {
+                display: inline-block;
+                margin: 0 10px;
+                padding: 2px;
+                background-color: var(--option-color);
+                border: 1px solid var(--contrast-color);
+                font-weight: bold;
+                cursor: pointer;
+                text-transform: uppercase;
+                box-shadow: 2px 2px var(--contrast-color);
+            }
+            .header .options button:hover,
+            .header .options input[type="checkbox"]:hover,
+            .header .options input[type="number"]:hover,
+            .dialog-button:hover {
+                background-color: var(--result-color);
+            }
         </style>
     </head>
     <body>
@@ -176,7 +247,7 @@
                     <input type="number" class="runs" name="runs" value="20" min="3" max="50">
                 <label for="funmode">Elternfrei:</label>
                     <input type="checkbox" class="funmode" name="funmode">
-                <button type="button" class="start" name="start" onclick="newGame();">RESET</button>
+                <button type="button" class="start" name="start" onclick="newGame();">NEUSTART</button>
                 <label for="multiply">&times;</label>
                     <input type="checkbox" class="operator" name="multiply" value="×">
                 <label for="divide">&divide;</label>
@@ -212,9 +283,19 @@
             // values for parental check
             const PASSWD = '[212,211,204,222,225,219]'
             const ENIGMA = 'apdiuvnashüoiasj'
+            // strings for congrat zero failures
+            const CONGRATS = [
+                'Das ist allererste Sahne!!!',
+                'Das ist Super!!!',
+                'Wahnsinnig gut!!!',
+                'Besser geht es nicht, oder?',
+                'DER HAMMER!!!',
+                'Wow, Spitze!!!'
+            ]
 
-            // encrypt a given string
+
             let encrypt = (content) => {
+                // encrypt a given string
                 var result = []; var passLen = ENIGMA.length ;
                 for(var i = 0  ; i < content.length ; i++) {
                     var passOffset = i%passLen ;
@@ -224,8 +305,8 @@
                 return JSON.stringify(result) ;
             }
 
-            // decrypt a given string
             let decrypt = (content) => {
+                // decrypt a given string
                 var result = [];var str = '';
                 var codesArr = JSON.parse(content);var passLen = ENIGMA.length ;
                 for(var i = 0  ; i < codesArr.length ; i++) {
@@ -239,23 +320,181 @@
                 return str ;
             }
 
-            // write data to local storage
             let writeLocalStorage = (key, content) => {
+                // write data to local storage
                 localStorage.setItem(key, content);
             }
 
-            // read data from local storage
             let readLocalStorage = (key) => {
+                // read data from local storage
                 return localStorage.getItem(key);
             }
 
-            // remove key from local storage
             let removeLocalStorage = (key) => {
+                // remove key from local storage
                 localStorage.removeItem(key);
             }
 
-            // initialize all necessary elements
+
+            let createDialog = (settings) => {
+                // generates a dialog based on the given settings
+                /*
+                settings {
+                    parent:         string      # parent object to append the dialog
+                    class:          string      # additional class for the dialog
+                    width:          int         # specify a min-width for the dialog
+                    alert:          boolean     # if the dialog is an alert, no cancel
+                    prompt:         boolean     # if the dialog a prompt, with input
+                    password:       boolean     # if the prompt input is hidden
+                    notification:   boolean     # if the dialog is a notification, autoclose 1s
+                    timeout:        int         # time in ms for autoclose the notification
+                    placeholder:    string      # placeholder value for prompt dialog
+                    title:          string      # title of the dialog
+                    content:        string      # content of the dialog
+                    onload:         function    # fired after dialog appended but before visible
+                    onunload:       function    # fired before dialog detached from parent
+                    onok:           function    # fired on ok button
+                    oncancel:       function    # fired on cancel button
+                    labelok:        string      # label for the ok button
+                    labelcancel:    string      # label for the cancel button
+                    buttons:        array of objects    # label:    string      # label of the button
+                                                        # function: function    # function of the button
+                }
+                */
+                let props = {
+                    parent: 'body',
+                    DOM: {},
+                    width: undefined,
+                    alert: false,
+                    prompt: false,
+                    password: false,
+                    notification: false,
+                    timeout: 1000,
+                    title: 'Einfach Rechnen',
+                    content: 'undefined',
+                    onload: () => {
+                        return true;
+                    },
+                    onunload: () => {
+                        return true;
+                    },
+                    onok: () => {
+                        return true;
+                    },
+                    oncancel: () => {
+                        return true;
+                    },
+                    labelok: 'ok',
+                    labelcancel: 'abbrechen',
+                    buttons: [],
+                    cleanup: () => {
+                        props.onunload({data: {dialog: props}});
+                        props.DOM.wrapper.classList.add('invisible');
+                        setTimeout(() => {
+                            props.DOM.wrapper.remove();
+                        }, 500);
+                    }
+                }
+                for (let prop in settings) {
+                    if (prop == "buttons") {
+                        for (let i = 0; i < settings[prop].length; i++) {
+                            props.buttons.push(settings[prop][i]);
+                        }
+                    } else {
+                        props[prop] = settings[prop]
+                    }
+                }
+                if (!props.notification) {
+                    props.buttons.unshift({
+                        label: props.labelok,
+                        function: props.onok
+                    });
+                }
+                if (!(props.alert || props.notification)) {
+                    props.buttons.push({
+                        label: props.labelcancel,
+                        function: props.oncancel
+                    });
+                }
+                props.DOM.wrapper = document.createElement('DIV');
+                props.DOM.wrapper.classList.add('dialog-wrapper');
+                let dialog = document.createElement('DIV');
+                dialog.classList.add('dialog-container');
+                if (props.width) {
+                    dialog.style.minwidth = props.width;
+                }
+                props.DOM.header = document.createElement('DIV');
+                props.DOM.header.classList.add('dialog-header');
+                props.DOM.header.innerHTML = props.title;
+                props.DOM.content = document.createElement('DIV');
+                props.DOM.content.classList.add('dialog-content');
+                props.DOM.content.innerHTML = props.content;
+                if (props.prompt) {
+                    props.input = document.createElement('INPUT');
+                    props.input.classList.add('dialog-input');
+                    if (props.password) {
+                        props.input.type = 'password';
+                    } else {
+                        props.input.type = 'text';
+                        props.input.setAttribute('placeholder', props.placeholder);
+                    }
+                    props.DOM.content.append(props.input);
+                    props.DOM.content.addEventListener('keyup', (e) => {
+                        switch (e.key) {
+                            case 'Enter':
+                                if (props.onok({...props})) {
+                                    props.cleanup();
+                                };
+                                break
+                            case 'Escape':
+                                if (props.oncancel({...props})) {
+                                    props.cleanup();
+                                };
+                                break
+                            default:
+                                return;
+                        }
+                    })
+                }
+                props.DOM.footer = document.createElement('DIV');
+                props.DOM.footer.classList.add('dialog-footer');
+                for (let i = 0; i < props.buttons.length; i++) {
+                    let btn = document.createElement('DIV');
+                    btn.innerHTML = props.buttons[i].label;
+                    btn.classList.add('dialog-button');
+                    props.DOM.footer.append(btn);
+                    if (typeof(props.buttons[i].function) === 'function') {
+                        btn.addEventListener('click', (e) => {
+                            if (props.buttons[i].function({...props})) {
+                               props.cleanup();
+                            }
+                        })
+                    }
+                }
+                dialog.append(props.DOM.header,
+                              props.DOM.content,
+                              props.DOM.footer);
+                props.DOM.wrapper.append(dialog);
+                props.DOM.wrapper.classList.add('invisible');
+                let parent = document.querySelector(props.parent);
+                parent.append(props.DOM.wrapper);
+                props.onload({data: {dialog: props}});
+                setTimeout(function() {
+                    props.DOM.wrapper.classList.remove('invisible');
+                    if (props.notification) {
+                        setTimeout(function() {
+                            props.cleanup();
+                        }, props.timeout)
+                    } else if (props.prompt) {
+                        setTimeout(function() {
+                            props.input.focus();
+                        }, 100)
+                    }
+                }, 100);
+            }
+
             let initializeGame = () => {
+                // initialize all necessary elements
                 if (readLocalStorage('settings')) {
                     restoreSettings();
                 } else {
@@ -271,29 +510,47 @@
                 startGame();
             }
 
-            // check if the game starts for the first time else ask for password
             let newGame = () => {
+                // check if the game starts for the first time else ask for password
                 let storedHistory = JSON.parse(readLocalStorage('storedHistory'))
                 if (storedHistory) {
                     if (funmode) {
                         removeLocalStorage('storedHistory');
                         startGame();
                     } else {
-                        let response = prompt("Der \"Elternfrei\" Modus ist deaktiviert,\ndu brauchst das Passwort zum zurücksetzen?");
-                        if (response) {
-                            if (encrypt(response.toLowerCase()) === PASSWD) {
-                                removeLocalStorage('storedHistory');
-                                startGame();
+                        createDialog({
+                            content: 'Der \"Elternfrei\" Modus ist deaktiviert,</br>du brauchst das Passwort zum neustarten?',
+                            prompt: true,
+                            password: true,
+                            onok: (elem) => {
+                                if (encrypt(elem.input.value.toLowerCase()) === PASSWD) {
+                                    removeLocalStorage('storedHistory');
+                                    startGame();
+                                } else {
+                                    createDialog({
+                                        content: 'Falsches Passwort!',
+                                        title: 'Oh Oh Oh',
+                                        notification: true
+                                    })
+                                    elem.input.value = '';
+                                    elem.input.focus();
+                                    return false
+                                }
+                                return true
+                            },
+                            oncancel: (elem) => {
+                                restoreSettings();
+                                return true
                             }
-                        }
+                        });
                     }
                 } else {
                     startGame();
                 }
             }
 
-            // start the game
             let startGame = () => {
+                // start the game
                 if (parseInt(runsInput.value) > parseInt(runsInput.max)) {
                     runsInput.value = runsInput.max;
                 } else if (parseInt(runsInput.value) < parseInt(runsInput.min)) {
@@ -333,17 +590,21 @@
                     );
                     updateScore();
                     updateCounter();
+
+                    storeSettings();
+
                     startButton.blur();
                 }
 
                 document.addEventListener('keydown', handleInput);
                 for (let input of optionInputs) {
-                    input.addEventListener('change', storeSettings);
+                    // input.addEventListener('change', storeSettings);
+                    input.addEventListener('change', newGame);
                 }
             }
 
-            // get the wanted operations for the calculation
             let getOperations = () => {
+                // get the wanted operations for the calculation
                 let operators = [];
                 for (let item of operatorsList) {
                     if (item.checked) {
@@ -353,8 +614,8 @@
                 return operators
             }
 
-            // create a calculation
             let createCalc = (limit) => {
+                // create a calculation
                 let operators = getOperations();
                 let operator = operators[Math.floor((Math.random() * operators.length))];
                 let first, second, result;
@@ -403,8 +664,8 @@
                 }
             }
 
-            // update the score in the header
             let updateScore = () => {
+                // update the score in the header
                 let failure = count - success;
                 let percent = 100;
                 if (count > 0) {
@@ -414,8 +675,8 @@
                 scoreDOM.innerHTML = `${failure} Fehler (${percent}%)`;
             }
 
-            // update the counter in the header
             let updateCounter = () => {
+                // update the counter in the header
                 let max = maxRuns.toString().padStart(2, 0);
                 let counter;
                 if (success == max) {
@@ -426,8 +687,8 @@
                 counterDOM.innerHTML = `${counter}/${max}`;
             }
 
-            // check if the calculation is correct
             let checkInput = (input) => {
+                // check if the calculation is correct
                 let operator = operatorDOM.innerHTML;
                 let first = parseInt(possibleInputs[0].innerHTML);
                 let second = parseInt(possibleInputs[1].innerHTML);
@@ -470,11 +731,19 @@
                 }
             }
 
-            // write the last calculation to the history
             let toHistory = (correct) => {
+                // write the last calculation to the history
                 let element = document.createElement('DIV');
                 let index = (success + 1).toString().padStart(2, 0);
-                element.innerHTML = `<span>${index}</span> <span>${possibleInputs[0].innerHTML}${operatorDOM.innerHTML}${possibleInputs[1].innerHTML}=${possibleInputs[2].innerHTML}</span>`;
+                let inputs = []
+                for (let i = 0; i < possibleInputs.length; i++) {
+                    let string = possibleInputs[i].innerHTML;
+                    if (i === searchedInput) {
+                        string = `{${possibleInputs[i].innerHTML}}`;
+                    }
+                    inputs.push(string);
+                }
+                element.innerHTML = `<span>${index}</span> <span>${inputs[0]}${operatorDOM.innerHTML}${inputs[1]}=${inputs[2]}</span>`;
 
                 if (correct) {
                     element.classList.add('success');
@@ -488,8 +757,8 @@
                 possibleInputs[searchedInput].innerHTML = '_';
             }
 
-            // store the game to the localStorage
             let storeHistory = () => {
+                // store the game to the localStorage
                 let calculation = {
                     first: possibleInputs[0].innerHTML,
                     operator: operatorDOM.innerHTML,
@@ -523,8 +792,8 @@
                 writeLocalStorage('storedHistory', JSON.stringify(storedHistory));
             }
 
-            // restore the last calculation to the history
             let restoreHistory = () => {
+                // restore the last calculation to the history
                 let storedHistory = JSON.parse(readLocalStorage('storedHistory'));
                 // restore calculation
                 possibleInputs[0].innerHTML = storedHistory.calculation.first;
@@ -559,22 +828,22 @@
                 }
             }
 
-            // shpw the results at the end of the game
             let showResult = () => {
+                // shpw the results at the end of the game
                 calculationDOM.classList.remove('success', 'failure');
                 let failure = count - success;
                 let percent = Math.floor((success * 100) / count);
                 let congrat = 'Versuch es doch noch einmal!';
                 if (failure === 0) {
-                    congrat = 'Das ist allererste Sahne!!!'
+                    congrat = CONGRATS[(Math.floor(Math.random() * CONGRATS.length - 1))]
                 }
                 calculationDOM.classList.add('result');
                 calculationDOM.innerHTML = `Du hast ${failure} Fehler, das sind <b>${percent}%</b>! ${congrat}`;
                 document.removeEventListener('keydown', handleInput);
             }
 
-            // handle keyboard inputs
             let handleInput = (e) => {
+                // handle keyboard inputs
                 // check if input element has focus to prevent wrong input
                 let activeButtons = [startButton];
                 let activeInputs = [runsInput, limitInput, startButton];
@@ -612,8 +881,8 @@
                 }
             }
 
-            // store the current settings
             let storeSettings = (e) => {
+                // store the current settings
                 let settings = {
                     runs: runsInput.value,
                     limit: limitInput.value,
@@ -626,8 +895,8 @@
                 writeLocalStorage('settings', JSON.stringify(settings));
             }
 
-            // restore the last settings
             let restoreSettings = () => {
+                // restore the last settings
                 let settings = JSON.parse(readLocalStorage('settings'));
                 for (let item in settings) {
                     let element = optionsDOM.querySelector(`[name=${item}]`)
