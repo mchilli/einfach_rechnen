@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <title>Einfach Rechnen</title>
+        <meta name="viewport" content="width=device-width, user-scalable=no" />
         <style media="screen">
             :root {
                 --success-color: #4CAF50;
@@ -13,7 +14,7 @@
                 --background-color: #FFFFFF;
             }
             html {
-                font-family: sans-serif;
+                font-family: arial;
             }
             body {
                 width: 100vw;
@@ -24,16 +25,16 @@
 
             .header {
                 display: grid;
-                grid-template-columns: 320px auto minmax(auto, 480px);
+                grid-template-columns: minmax(auto, 320px) auto minmax(auto, 480px);
                 place-items: center;
                 height: 60px;
                 margin: 0 5px;
-                font-size: 40px;
+                font-size: 2.4em;
             }
             .header .options {
                 height: 100%;
                 width: 100%;
-                font-size: 20px;
+                font-size: 0.5em;
                 font-weight: bold;
                 display: grid;
                 grid-template-columns: repeat(9, auto);
@@ -70,12 +71,14 @@
                 transform: rotate(45deg);
             }
             .header .options input[type="number"]{
-                width: 50px;
+                width: 30px;
                 font-family: sans-serif;
                 font-weight: bold;
                 background-color: var(--option-color);
                 border: 1px solid var(--contrast-color);
                 box-shadow: 2px 2px 0 var(--contrast-color);
+                -webkit-appearance: textfield;
+                -moz-appearance: textfield;
             }
             .header .options button {
                 grid-column: 9 / 10;
@@ -83,25 +86,32 @@
                 -webkit-appearance: none;
                 cursor: pointer;
                 height: 48px;
-                margin: 5px;
                 font-weight: bold;
                 background-color: var(--option-color);
                 border: 1px solid var(--contrast-color);
                 box-shadow: 2px 2px 0 var(--contrast-color);
             }
 
+            .mobile-input {
+                position: fixed;
+                top: 0;
+                width: 0;
+                border: 0;
+                -webkit-appearance: textfield;
+                -moz-appearance: textfield;
+            }
+
             .calculation {
-                height: 90px;
                 text-align: center;
                 margin: 0 4px;
                 box-sizing: border-box;
-                font-size: 40px;
                 font-weight: bold;
                 border: 2px solid var(--contrast-color);
-                border-top-left-radius: 20px;
-                border-bottom-left-radius: 50px;
-                border-top-right-radius: 20px;
-                border-bottom-right-radius: 50px;
+                border-top-left-radius: 1em;
+                border-bottom-left-radius: 3em;
+                border-top-right-radius: 1em;
+                border-bottom-right-radius: 3em;
+                user-select: none;
             }
             .calculation.success{
                 background-color: var(--success-color);
@@ -115,14 +125,14 @@
             }
             .calculation div {
                 display: inline-block;
-                font-size: 80px;
+                font-size: 6em;
             }
 
             .history {
-                height: calc(100vh - 150px);
+                height: calc(100vh - 5em);
                 padding: 4px 50px 0 50px;
                 box-sizing: border-box;
-                font-size: 30px;
+                font-size: 2em;
                 display: flex;
                 flex-wrap: wrap;
                 flex-direction: column;
@@ -131,9 +141,8 @@
             }
             .history div {
                 display: grid;
-                grid-template-columns: 48px auto;
+                grid-template-columns: 1.5em auto;
                 place-items: center;
-                height: 48px;
                 margin-bottom: 4px;
                 margin-right: 4px;
             }
@@ -142,13 +151,14 @@
                 place-items: center;
                 width: 100%;
                 height: 100%;
-                padding: 0 5px;
+                /* padding: 0 5px; */
+                padding: 8px 5px;
                 border: 2px solid var(--contrast-color);
                 box-sizing: border-box;
             }
             .history div span:first-child{
-                border-top-left-radius: 10px;
-                border-bottom-left-radius: 20px;
+                border-top-left-radius: 0.5em;
+                border-bottom-left-radius: 1em;
                 box-sizing: border-box;
             }
             .history div.success span:first-child{
@@ -159,9 +169,10 @@
             }
             .history div span:last-child{
                 border-left: unset;
-                border-top-right-radius: 10px;
-                border-bottom-right-radius: 20px;
+                border-top-right-radius: 0.5em;
+                border-bottom-right-radius: 1em;
             }
+
             .dialog-wrapper {
                 position: absolute;
                 top: 0;
@@ -185,10 +196,10 @@
             .dialog-header {
                 font-size: 30px;
                 font-weight: bold;
-                border-top-left-radius: 50px;
-                border-bottom-left-radius: 20px;
-                border-top-right-radius: 50px;
-                border-bottom-right-radius: 20px;
+                border-top-left-radius: 3em;
+                border-bottom-left-radius: 1em;
+                border-top-right-radius: 3em;
+                border-bottom-right-radius: 1em;
             }
             .dialog-content {
                 margin: 0 15px;
@@ -203,17 +214,17 @@
                 font-size: inherit;
                 padding: 0 15px;
                 border: 2px solid var(--contrast-color);
-                border-radius: 20px;
+                border-radius: 1em;
             }
             .dialog-input:focus {
                 outline: unset;
             }
             .dialog-footer {
                 text-align: right;
-                border-top-left-radius: 20px;
-                border-bottom-left-radius: 50px;
-                border-top-right-radius: 20px;
-                border-bottom-right-radius: 50px;
+                border-top-left-radius: 1em;
+                border-bottom-left-radius: 3em;
+                border-top-right-radius: 1em;
+                border-bottom-right-radius: 3em;
             }
             .dialog-button {
                 display: inline-block;
@@ -232,6 +243,27 @@
             .dialog-button:hover {
                 background-color: var(--result-color);
             }
+            @media (pointer: coarse) {
+                .calculation div {
+                    font-size: 3em;
+                }
+                .history {
+                    font-size: 1em;
+                }
+                .history div {
+                    grid-template-columns: 2em auto;;
+                }
+            }
+            @media (pointer: coarse) and (max-aspect-ratio: 13/9) {
+                .header {
+                    font-size: 1em;
+                }
+            }
+            @media (pointer: coarse) and (min-aspect-ratio: 13/9) {
+                .header {
+                    font-size: 1.6em;
+                }
+            }
         </style>
     </head>
     <body>
@@ -247,7 +279,7 @@
                     <input type="number" class="runs" name="runs" value="20" min="3" max="50">
                 <label for="funmode">Elternfrei:</label>
                     <input type="checkbox" class="funmode" name="funmode">
-                <button type="button" class="start" name="start" onclick="newGame();">NEUSTART</button>
+                <button type="button" class="start" name="start" onclick="newGame();">NEU</button>
                 <label for="multiply">&times;</label>
                     <input type="checkbox" class="operator" name="multiply" value="×">
                 <label for="divide">&divide;</label>
@@ -277,7 +309,7 @@
             let historyDOM = document.getElementsByClassName('history')[0];
 
             // global calculation DOM elements
-            let operatorDOM, equalDOM, possibleInputs, searchedInput;
+            let operatorDOM, equalDOM, possibleInputs, searchedInput, mobileInput;
             // global options
             let success, count, maxRuns, limit, funmode, advanced;
             // values for parental check
@@ -335,6 +367,20 @@
                 localStorage.removeItem(key);
             }
 
+            let isMobile = () => {
+                // return true if the device is a mobile device
+                if ( navigator.userAgent.match(/Android/i)
+                 || navigator.userAgent.match(/webOS/i)
+                 || navigator.userAgent.match(/iPhone/i)
+                 || navigator.userAgent.match(/iPad/i)
+                 || navigator.userAgent.match(/iPod/i)
+                 || navigator.userAgent.match(/BlackBerry/i)
+                 || navigator.userAgent.match(/Windows Phone/i)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
 
             let createDialog = (settings) => {
                 // generates a dialog based on the given settings
@@ -507,6 +553,12 @@
                 let secondDOM = document.createElement('DIV');
                 let resultDOM = document.createElement('DIV');
                 possibleInputs = [firstDOM, secondDOM, resultDOM];
+                if (isMobile()) {
+                    mobileInput = document.createElement('INPUT');
+                    mobileInput.type = 'number';
+                    mobileInput.classList.add('mobile-input');
+                    document.body.append(mobileInput);
+                }
                 startGame();
             }
 
@@ -597,6 +649,13 @@
                 }
 
                 document.addEventListener('keydown', handleInput);
+
+                if (isMobile()) {
+                    calculationDOM.addEventListener('click', (e) => {
+                        mobileInput.focus();
+                    })
+                }
+
                 for (let input of optionInputs) {
                     // input.addEventListener('change', storeSettings);
                     input.addEventListener('change', newGame);
@@ -874,6 +933,9 @@
                             input = possibleInputs[searchedInput].innerHTML;
                             if (input !== '' && input !== '_') {
                                 checkInput(input)
+                            }
+                            if (isMobile()) {
+                                mobileInput.value = '';
                             }
                             break;
                         default:
