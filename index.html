@@ -1,34 +1,37 @@
 <!DOCTYPE html>
 <html lang="de" dir="ltr">
     <head>
-        <meta charset="utf-8">
+        <meta charset="utf-8" />
         <title>Einfach Rechnen</title>
         <meta name="viewport" content="width=device-width, user-scalable=no" />
         <style media="screen">
             :root {
-                --success-color: #4CAF50;
-                --failure-color: #F44336;
-                --result-color: #FFC107;
-                --option-color: #2196F3;
+                --success-color: #4caf50;
+                --failure-color: #f44336;
+                --result-color: #ffc107;
+                --option-color: #2196f3;
                 --contrast-color: #212121;
-                --background-color: #FFFFFF;
+                --background-color: #ffffff;
             }
             html {
                 font-family: arial;
             }
             body {
-                width: 100vw;
-                height: 100vh;
-                margin: 0;
+                height: calc(100vh - 8px);
+                margin: 4px;
+                user-select: none;
                 line-height: 1;
+                display: grid;
+                grid-template-rows: min-content min-content;
+                grid-row-gap: 4px;
+                overflow: hidden;
             }
 
             .header {
                 display: grid;
                 grid-template-columns: minmax(auto, 320px) auto minmax(auto, 480px);
                 place-items: center;
-                height: 60px;
-                margin: 0 5px;
+                height: fit-content;
                 font-size: 2.4em;
             }
             .header .options {
@@ -44,19 +47,19 @@
             .header .options label {
                 justify-self: end;
             }
-            .header .options input[type="checkbox"] {
+            .header .options input[type='checkbox'] {
                 margin: 0px;
                 cursor: pointer;
                 border: 1px solid;
                 height: 15px;
                 width: 15px;
                 -webkit-appearance: none;
-                box-shadow: 2px 2px 0 var(--contrast-color);
+                box-shadow: 1px 1px 1px var(--contrast-color);
             }
-            .header .options input[type="checkbox"]:checked {
+            .header .options input[type='checkbox']:checked {
                 background-color: var(--option-color);
             }
-            .header .options input[type="checkbox"]:checked::after {
+            .header .options input[type='checkbox']:checked::after {
                 content: '';
                 display: block;
                 position: relative;
@@ -70,13 +73,13 @@
                 -ms-transform: rotate(45deg);
                 transform: rotate(45deg);
             }
-            .header .options input[type="number"]{
+            .header .options input[type='number'] {
                 width: 30px;
                 font-family: sans-serif;
                 font-weight: bold;
                 background-color: var(--option-color);
                 border: 1px solid var(--contrast-color);
-                box-shadow: 2px 2px 0 var(--contrast-color);
+                box-shadow: 1px 1px 1px var(--contrast-color);
                 -webkit-appearance: textfield;
                 -moz-appearance: textfield;
             }
@@ -89,7 +92,7 @@
                 font-weight: bold;
                 background-color: var(--option-color);
                 border: 1px solid var(--contrast-color);
-                box-shadow: 2px 2px 0 var(--contrast-color);
+                box-shadow: 1px 1px 1px var(--contrast-color);
             }
 
             .mobile-input {
@@ -97,29 +100,26 @@
                 top: 0;
                 width: 0;
                 border: 0;
+                opacity: 0;
                 -webkit-appearance: textfield;
                 -moz-appearance: textfield;
             }
 
             .calculation {
                 text-align: center;
-                margin: 0 4px;
                 box-sizing: border-box;
                 font-weight: bold;
                 border: 2px solid var(--contrast-color);
-                border-top-left-radius: 1em;
-                border-bottom-left-radius: 3em;
-                border-top-right-radius: 1em;
-                border-bottom-right-radius: 3em;
+                border-radius: 1rem;
                 user-select: none;
             }
-            .calculation.success{
+            .calculation.success {
                 background-color: var(--success-color);
             }
-            .calculation.failure{
+            .calculation.failure {
                 background-color: var(--failure-color);
             }
-            .calculation.result{
+            .calculation.result {
                 font-weight: normal;
                 background-color: var(--result-color);
             }
@@ -128,49 +128,51 @@
                 font-size: 6em;
             }
 
+            .history-wrapper {
+                padding: 0 50px;
+                overflow: hidden;
+            }
             .history {
-                height: calc(100vh - 5em);
-                padding: 4px 50px 0 50px;
+                height: 100%;
                 box-sizing: border-box;
                 font-size: 2em;
-                display: flex;
-                flex-wrap: wrap;
-                flex-direction: column;
-                align-content: flex-start;
                 overflow: auto;
+                display: grid;
+                grid-template-columns: repeat(auto-fill, 250px);
+                grid-gap: 4px;
+                align-content: start;
+                justify-content: space-evenly;
             }
             .history div {
                 display: grid;
                 grid-template-columns: 1.5em auto;
-                place-items: center;
-                margin-bottom: 4px;
-                margin-right: 4px;
+                height: max-content;
             }
-            .history div span{
+            .history div span {
                 display: grid;
                 place-items: center;
                 width: 100%;
                 height: 100%;
-                /* padding: 0 5px; */
                 padding: 8px 5px;
                 border: 2px solid var(--contrast-color);
                 box-sizing: border-box;
             }
-            .history div span:first-child{
-                border-top-left-radius: 0.5em;
-                border-bottom-left-radius: 1em;
+            .history div span:first-child {
+                border-top-left-radius: 0.3em;
+                border-bottom-left-radius: 0.3em;
                 box-sizing: border-box;
             }
-            .history div.success span:first-child{
+            .history div.success span:first-child {
                 background-color: var(--success-color);
             }
-            .history div.failure span:first-child{
+            .history div.failure span:first-child {
                 background-color: var(--failure-color);
             }
-            .history div span:last-child{
+            .history div span:last-child {
                 border-left: unset;
-                border-top-right-radius: 0.5em;
-                border-bottom-right-radius: 1em;
+                border-top-right-radius: 0.3em;
+                border-bottom-right-radius: 0.3em;
+                word-break: break-all;
             }
 
             .dialog-wrapper {
@@ -185,21 +187,19 @@
             .dialog-wrapper.invisible {
                 opacity: 0;
             }
-            .dialog-header, .dialog-footer {
+            .dialog-header,
+            .dialog-footer {
                 min-width: 200px;
                 min-height: 20px;
                 padding: 10px 20px;
                 background-color: var(--background-color);
                 border: 2px solid var(--contrast-color);
-                box-shadow: 2px 2px var(--contrast-color);
+                box-shadow: 1px 1px 1px var(--contrast-color);
             }
             .dialog-header {
                 font-size: 30px;
                 font-weight: bold;
-                border-top-left-radius: 3em;
-                border-bottom-left-radius: 1em;
-                border-top-right-radius: 3em;
-                border-bottom-right-radius: 1em;
+                border-radius: 0.8rem;
             }
             .dialog-content {
                 margin: 0 15px;
@@ -221,10 +221,7 @@
             }
             .dialog-footer {
                 text-align: right;
-                border-top-left-radius: 1em;
-                border-bottom-left-radius: 3em;
-                border-top-right-radius: 1em;
-                border-bottom-right-radius: 3em;
+                border-radius: 0.8rem;
             }
             .dialog-button {
                 display: inline-block;
@@ -235,23 +232,28 @@
                 font-weight: bold;
                 cursor: pointer;
                 text-transform: uppercase;
-                box-shadow: 2px 2px var(--contrast-color);
+                box-shadow: 1px 1px 1px var(--contrast-color);
             }
             .header .options button:hover,
-            .header .options input[type="checkbox"]:hover,
-            .header .options input[type="number"]:hover,
+            .header .options input[type='checkbox']:hover,
+            .header .options input[type='number']:hover,
             .dialog-button:hover {
                 background-color: var(--result-color);
             }
             @media (pointer: coarse) {
                 .calculation div {
                     font-size: 3em;
+                    border-radius: 0.3rem;
+                }
+                .history-wrapper {
+                    padding: 0px 20px;
                 }
                 .history {
                     font-size: 1em;
+                    grid-template-columns: repeat(auto-fill, 150px);
                 }
                 .history div {
-                    grid-template-columns: 2em auto;;
+                    grid-template-columns: 2em auto;
                 }
             }
             @media (pointer: coarse) and (max-aspect-ratio: 13/9) {
@@ -272,26 +274,28 @@
             <div class="counter"></div>
             <div class="options">
                 <label for="plus">&plus;</label>
-                    <input type="checkbox" class="operator" checked name="plus" value="+">
+                <input type="checkbox" class="operator" checked name="plus" value="+" />
                 <label for="minus">&minus;</label>
-                    <input type="checkbox" class="operator" checked name="minus" value="−">
+                <input type="checkbox" class="operator" checked name="minus" value="−" />
                 <label for="runs">Runden:</label>
-                    <input type="number" class="runs" name="runs" value="20" min="3" max="50">
+                <input type="number" class="runs" name="runs" value="20" min="3" max="50" />
                 <label for="funmode">Elternfrei:</label>
-                    <input type="checkbox" class="funmode" name="funmode">
+                <input type="checkbox" class="funmode" name="funmode" />
                 <button type="button" class="start" name="start" onclick="newGame();">NEU</button>
                 <label for="multiply">&times;</label>
-                    <input type="checkbox" class="operator" name="multiply" value="×">
+                <input type="checkbox" class="operator" name="multiply" value="×" />
                 <label for="divide">&divide;</label>
-                    <input type="checkbox" class="operator" name="divide" value="÷">
+                <input type="checkbox" class="operator" name="divide" value="÷" />
                 <label for="limit">Limit:</label>
-                    <input type="number" class="limit" name="limit" value="20" min="10" max="1000">
+                <input type="number" class="limit" name="limit" value="20" min="10" max="1000" />
                 <label for="advanced">Schwer:</label>
-                    <input type="checkbox" class="advanced" name="advanced">
+                <input type="checkbox" class="advanced" name="advanced" />
             </div>
         </div>
         <div class="calculation"></div>
-        <div class="history"></div>
+        <div class="history-wrapper">
+            <div class="history"></div>
+        </div>
         <script type="text/javascript">
             // write DOM elements to variables
             let headerDOM = document.getElementsByClassName('header')[0];
@@ -313,8 +317,8 @@
             // global options
             let success, count, maxRuns, limit, funmode, advanced;
             // values for parental check
-            const PASSWD = '[212,211,204,222,225,219]'
-            const ENIGMA = 'apdiuvnashüoiasj'
+            const PASSWD = '[212,211,204,222,225,219]';
+            const ENIGMA = 'apdiuvnashüoiasj';
             // strings for congrat zero failures
             const CONGRATS = [
                 'Das ist allererste Sahne!!!',
@@ -322,65 +326,70 @@
                 'Wahnsinnig gut!!!',
                 'Besser geht es nicht, oder?',
                 'DER HAMMER!!!',
-                'Wow, Spitze!!!'
-            ]
-
+                'Wow, Spitze!!!',
+            ];
 
             let encrypt = (content) => {
                 // encrypt a given string
-                var result = []; var passLen = ENIGMA.length ;
-                for(var i = 0  ; i < content.length ; i++) {
-                    var passOffset = i%passLen ;
-                    var calAscii = (content.charCodeAt(i)+ENIGMA.charCodeAt(passOffset));
+                var result = [];
+                var passLen = ENIGMA.length;
+                for (var i = 0; i < content.length; i++) {
+                    var passOffset = i % passLen;
+                    var calAscii = content.charCodeAt(i) + ENIGMA.charCodeAt(passOffset);
                     result.push(calAscii);
                 }
-                return JSON.stringify(result) ;
-            }
+                return JSON.stringify(result);
+            };
 
             let decrypt = (content) => {
                 // decrypt a given string
-                var result = [];var str = '';
-                var codesArr = JSON.parse(content);var passLen = ENIGMA.length ;
-                for(var i = 0  ; i < codesArr.length ; i++) {
-                    var passOffset = i%passLen ;
-                    var calAscii = (codesArr[i]-ENIGMA.charCodeAt(passOffset));
-                    result.push(calAscii) ;
+                var result = [];
+                var str = '';
+                var codesArr = JSON.parse(content);
+                var passLen = ENIGMA.length;
+                for (var i = 0; i < codesArr.length; i++) {
+                    var passOffset = i % passLen;
+                    var calAscii = codesArr[i] - ENIGMA.charCodeAt(passOffset);
+                    result.push(calAscii);
                 }
-                for(var i = 0 ; i < result.length ; i++) {
-                    var ch = String.fromCharCode(result[i]); str += ch ;
+                for (var i = 0; i < result.length; i++) {
+                    var ch = String.fromCharCode(result[i]);
+                    str += ch;
                 }
-                return str ;
-            }
+                return str;
+            };
 
             let writeLocalStorage = (key, content) => {
                 // write data to local storage
                 localStorage.setItem(key, content);
-            }
+            };
 
             let readLocalStorage = (key) => {
                 // read data from local storage
                 return localStorage.getItem(key);
-            }
+            };
 
             let removeLocalStorage = (key) => {
                 // remove key from local storage
                 localStorage.removeItem(key);
-            }
+            };
 
             let isMobile = () => {
                 // return true if the device is a mobile device
-                if ( navigator.userAgent.match(/Android/i)
-                 || navigator.userAgent.match(/webOS/i)
-                 || navigator.userAgent.match(/iPhone/i)
-                 || navigator.userAgent.match(/iPad/i)
-                 || navigator.userAgent.match(/iPod/i)
-                 || navigator.userAgent.match(/BlackBerry/i)
-                 || navigator.userAgent.match(/Windows Phone/i)) {
+                if (
+                    navigator.userAgent.match(/Android/i) ||
+                    navigator.userAgent.match(/webOS/i) ||
+                    navigator.userAgent.match(/iPhone/i) ||
+                    navigator.userAgent.match(/iPad/i) ||
+                    navigator.userAgent.match(/iPod/i) ||
+                    navigator.userAgent.match(/BlackBerry/i) ||
+                    navigator.userAgent.match(/Windows Phone/i)
+                ) {
                     return true;
                 } else {
                     return false;
                 }
-            }
+            };
 
             let createDialog = (settings) => {
                 // generates a dialog based on the given settings
@@ -434,32 +443,32 @@
                     labelcancel: 'abbrechen',
                     buttons: [],
                     cleanup: () => {
-                        props.onunload({data: {dialog: props}});
+                        props.onunload({ data: { dialog: props } });
                         props.DOM.wrapper.classList.add('invisible');
                         setTimeout(() => {
                             props.DOM.wrapper.remove();
                         }, 500);
-                    }
-                }
+                    },
+                };
                 for (let prop in settings) {
-                    if (prop == "buttons") {
+                    if (prop == 'buttons') {
                         for (let i = 0; i < settings[prop].length; i++) {
                             props.buttons.push(settings[prop][i]);
                         }
                     } else {
-                        props[prop] = settings[prop]
+                        props[prop] = settings[prop];
                     }
                 }
                 if (!props.notification) {
                     props.buttons.unshift({
                         label: props.labelok,
-                        function: props.onok
+                        function: props.onok,
                     });
                 }
                 if (!(props.alert || props.notification)) {
                     props.buttons.push({
                         label: props.labelcancel,
-                        function: props.oncancel
+                        function: props.oncancel,
                     });
                 }
                 props.DOM.wrapper = document.createElement('DIV');
@@ -488,19 +497,19 @@
                     props.DOM.content.addEventListener('keyup', (e) => {
                         switch (e.key) {
                             case 'Enter':
-                                if (props.onok({...props})) {
+                                if (props.onok({ ...props })) {
                                     props.cleanup();
-                                };
-                                break
+                                }
+                                break;
                             case 'Escape':
-                                if (props.oncancel({...props})) {
+                                if (props.oncancel({ ...props })) {
                                     props.cleanup();
-                                };
-                                break
+                                }
+                                break;
                             default:
                                 return;
                         }
-                    })
+                    });
                 }
                 props.DOM.footer = document.createElement('DIV');
                 props.DOM.footer.classList.add('dialog-footer');
@@ -509,35 +518,33 @@
                     btn.innerHTML = props.buttons[i].label;
                     btn.classList.add('dialog-button');
                     props.DOM.footer.append(btn);
-                    if (typeof(props.buttons[i].function) === 'function') {
+                    if (typeof props.buttons[i].function === 'function') {
                         btn.addEventListener('click', (e) => {
-                            if (props.buttons[i].function({...props})) {
-                               props.cleanup();
+                            if (props.buttons[i].function({ ...props })) {
+                                props.cleanup();
                             }
-                        })
+                        });
                     }
                 }
-                dialog.append(props.DOM.header,
-                              props.DOM.content,
-                              props.DOM.footer);
+                dialog.append(props.DOM.header, props.DOM.content, props.DOM.footer);
                 props.DOM.wrapper.append(dialog);
                 props.DOM.wrapper.classList.add('invisible');
                 let parent = document.querySelector(props.parent);
                 parent.append(props.DOM.wrapper);
-                props.onload({data: {dialog: props}});
-                setTimeout(function() {
+                props.onload({ data: { dialog: props } });
+                setTimeout(function () {
                     props.DOM.wrapper.classList.remove('invisible');
                     if (props.notification) {
-                        setTimeout(function() {
+                        setTimeout(function () {
                             props.cleanup();
-                        }, props.timeout)
+                        }, props.timeout);
                     } else if (props.prompt) {
-                        setTimeout(function() {
+                        setTimeout(function () {
                             props.input.focus();
-                        }, 100)
+                        }, 100);
                     }
                 }, 100);
-            }
+            };
 
             let initializeGame = () => {
                 // initialize all necessary elements
@@ -560,18 +567,19 @@
                     document.body.append(mobileInput);
                 }
                 startGame();
-            }
+            };
 
             let newGame = () => {
                 // check if the game starts for the first time else ask for password
-                let storedHistory = JSON.parse(readLocalStorage('storedHistory'))
+                let storedHistory = JSON.parse(readLocalStorage('storedHistory'));
                 if (storedHistory) {
                     if (funmode) {
                         removeLocalStorage('storedHistory');
                         startGame();
                     } else {
                         createDialog({
-                            content: 'Der \"Elternfrei\" Modus ist deaktiviert,</br>du brauchst das Passwort zum neustarten?',
+                            content:
+                                'Der "Elternfrei" Modus ist deaktiviert,</br>du brauchst das Passwort zum neustarten?',
                             prompt: true,
                             password: true,
                             onok: (elem) => {
@@ -582,24 +590,24 @@
                                     createDialog({
                                         content: 'Falsches Passwort!',
                                         title: 'Oh Oh Oh',
-                                        notification: true
-                                    })
+                                        notification: true,
+                                    });
                                     elem.input.value = '';
                                     elem.input.focus();
-                                    return false
+                                    return false;
                                 }
-                                return true
+                                return true;
                             },
                             oncancel: (elem) => {
                                 restoreSettings();
-                                return true
-                            }
+                                return true;
+                            },
                         });
                     }
                 } else {
                     startGame();
                 }
-            }
+            };
 
             let startGame = () => {
                 // start the game
@@ -653,14 +661,14 @@
                 if (isMobile()) {
                     calculationDOM.addEventListener('click', (e) => {
                         mobileInput.focus();
-                    })
+                    });
                 }
 
                 for (let input of optionInputs) {
                     // input.addEventListener('change', storeSettings);
                     input.addEventListener('change', newGame);
                 }
-            }
+            };
 
             let getOperations = () => {
                 // get the wanted operations for the calculation
@@ -670,18 +678,18 @@
                         operators.push(item.value);
                     }
                 }
-                return operators
-            }
+                return operators;
+            };
 
             let createCalc = (limit) => {
                 // create a calculation
                 let operators = getOperations();
-                let operator = operators[Math.floor((Math.random() * operators.length))];
+                let operator = operators[Math.floor(Math.random() * operators.length)];
                 let first, second, result;
 
                 do {
-                    second = Math.floor((Math.random() * limit));
-                    first = Math.floor((Math.random() * limit));
+                    second = Math.floor(Math.random() * limit);
+                    first = Math.floor(Math.random() * limit);
                     switch (operator) {
                         case '+':
                             result = first + second;
@@ -697,12 +705,11 @@
                             break;
                         default:
                     }
-                }
-                while (
-                    (result > limit) ||
-                    (result < 0) ||
-                    (isNaN(result)) ||
-                    (result % 1 !== 0) ||
+                } while (
+                    result > limit ||
+                    result < 0 ||
+                    isNaN(result) ||
+                    result % 1 !== 0 ||
                     (operator === '÷' && (first === 0 || second < 2)) ||
                     (operator === '×' && (first < 2 || second < 2))
                 );
@@ -712,16 +719,16 @@
                 let calculation = [first, second, result];
                 searchedInput = 2;
                 if (advanced) {
-                    searchedInput = Math.floor((Math.random() * 3));
+                    searchedInput = Math.floor(Math.random() * 3);
                 }
                 for (var i = 0; i < possibleInputs.length; i++) {
                     if (i === searchedInput) {
-                        possibleInputs[i].innerHTML = '_'
-                        continue
+                        possibleInputs[i].innerHTML = '_';
+                        continue;
                     }
-                    possibleInputs[i].innerHTML = calculation[i]
+                    possibleInputs[i].innerHTML = calculation[i];
                 }
-            }
+            };
 
             let updateScore = () => {
                 // update the score in the header
@@ -732,26 +739,26 @@
                 }
                 // scoreDOM.innerHTML = `${success}/${count} ${failure} Fehler (${percent}%)`;
                 scoreDOM.innerHTML = `${failure} Fehler (${percent}%)`;
-            }
+            };
 
             let updateCounter = () => {
                 // update the counter in the header
                 let max = maxRuns.toString().padStart(2, 0);
                 let counter;
                 if (success == max) {
-                    counter = (success).toString().padStart(2, 0);
+                    counter = success.toString().padStart(2, 0);
                 } else {
                     counter = (success + 1).toString().padStart(2, 0);
                 }
                 counterDOM.innerHTML = `${counter}/${max}`;
-            }
+            };
 
             let checkInput = (input) => {
                 // check if the calculation is correct
                 let operator = operatorDOM.innerHTML;
                 let first = parseInt(possibleInputs[0].innerHTML);
                 let second = parseInt(possibleInputs[1].innerHTML);
-                let result = parseInt(possibleInputs[2].innerHTML);;
+                let result = parseInt(possibleInputs[2].innerHTML);
 
                 switch (operator) {
                     case '+':
@@ -784,17 +791,17 @@
                 storeHistory();
                 setTimeout(() => {
                     calculationDOM.classList.remove('success', 'failure');
-                }, 300)
+                }, 300);
                 if (success >= maxRuns) {
                     showResult();
                 }
-            }
+            };
 
             let toHistory = (correct) => {
                 // write the last calculation to the history
                 let element = document.createElement('DIV');
                 let index = (success + 1).toString().padStart(2, 0);
-                let inputs = []
+                let inputs = [];
                 for (let i = 0; i < possibleInputs.length; i++) {
                     let string = possibleInputs[i].innerHTML;
                     if (i === searchedInput) {
@@ -814,7 +821,7 @@
                 historyDOM.insertBefore(element, lastElem);
 
                 possibleInputs[searchedInput].innerHTML = '_';
-            }
+            };
 
             let storeHistory = () => {
                 // store the game to the localStorage
@@ -823,7 +830,7 @@
                     operator: operatorDOM.innerHTML,
                     second: possibleInputs[1].innerHTML,
                     result: possibleInputs[2].innerHTML,
-                    search: searchedInput
+                    search: searchedInput,
                 };
                 let data = {
                     success: success,
@@ -840,16 +847,16 @@
                     let elemHTML = historyElements[i].innerHTML;
                     history.push({
                         class: elemClass,
-                        html: elemHTML
+                        html: elemHTML,
                     });
                 }
                 let storedHistory = {
                     calculation: calculation,
                     data: data,
-                    history: history
-                }
+                    history: history,
+                };
                 writeLocalStorage('storedHistory', JSON.stringify(storedHistory));
-            }
+            };
 
             let restoreHistory = () => {
                 // restore the last calculation to the history
@@ -885,7 +892,7 @@
                 if (success >= maxRuns) {
                     showResult();
                 }
-            }
+            };
 
             let showResult = () => {
                 // shpw the results at the end of the game
@@ -894,12 +901,12 @@
                 let percent = Math.floor((success * 100) / count);
                 let congrat = 'Versuch es doch noch einmal!';
                 if (failure === 0) {
-                    congrat = CONGRATS[(Math.floor(Math.random() * CONGRATS.length - 1))]
+                    congrat = CONGRATS[Math.floor(Math.random() * CONGRATS.length - 1)];
                 }
                 calculationDOM.classList.add('result');
                 calculationDOM.innerHTML = `Du hast ${failure} Fehler, das sind <b>${percent}%</b>! ${congrat}`;
                 document.removeEventListener('keydown', handleInput);
-            }
+            };
 
             let handleInput = (e) => {
                 // handle keyboard inputs
@@ -909,13 +916,13 @@
                 if (activeButtons.includes(document.activeElement)) {
                     document.activeElement.blur();
                 } else if (activeInputs.includes(document.activeElement)) {
-                    return
+                    return;
                 }
 
                 let key = e.key;
                 if (!isNaN(key)) {
                     if (possibleInputs[searchedInput].innerHTML === '_') {
-                        possibleInputs[searchedInput].innerHTML = ''
+                        possibleInputs[searchedInput].innerHTML = '';
                     }
                     possibleInputs[searchedInput].innerHTML += key;
                 } else {
@@ -924,7 +931,10 @@
                         case 'Backspace':
                             input = possibleInputs[searchedInput].innerHTML;
                             if (input.length > 1) {
-                                possibleInputs[searchedInput].innerHTML = input.substring(0, input.length - 1);
+                                possibleInputs[searchedInput].innerHTML = input.substring(
+                                    0,
+                                    input.length - 1
+                                );
                             } else {
                                 possibleInputs[searchedInput].innerHTML = '_';
                             }
@@ -932,7 +942,7 @@
                         case 'Enter':
                             input = possibleInputs[searchedInput].innerHTML;
                             if (input !== '' && input !== '_') {
-                                checkInput(input)
+                                checkInput(input);
                             }
                             if (isMobile()) {
                                 mobileInput.value = '';
@@ -941,7 +951,7 @@
                         default:
                     }
                 }
-            }
+            };
 
             let storeSettings = (e) => {
                 // store the current settings
@@ -952,23 +962,23 @@
                     advanced: advancedInput.checked,
                 };
                 for (let item of operatorsList) {
-                    settings[item.name] = item.checked
+                    settings[item.name] = item.checked;
                 }
                 writeLocalStorage('settings', JSON.stringify(settings));
-            }
+            };
 
             let restoreSettings = () => {
                 // restore the last settings
                 let settings = JSON.parse(readLocalStorage('settings'));
                 for (let item in settings) {
-                    let element = optionsDOM.querySelector(`[name=${item}]`)
-                    if(typeof(settings[item]) === "boolean"){
+                    let element = optionsDOM.querySelector(`[name=${item}]`);
+                    if (typeof settings[item] === 'boolean') {
                         element.checked = settings[item];
                     } else {
-                        element.value = settings[item]
+                        element.value = settings[item];
                     }
                 }
-            }
+            };
 
             initializeGame();
         </script>
