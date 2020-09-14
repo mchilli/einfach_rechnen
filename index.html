@@ -112,6 +112,7 @@
                 border: 2px solid var(--contrast-color);
                 border-radius: 1rem;
                 user-select: none;
+                padding: 5px;
             }
             .calculation.success {
                 background-color: var(--success-color);
@@ -681,6 +682,10 @@
                 return operators;
             };
 
+            let randomInteger = (min, max) => {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            };
+
             let createCalc = (limit) => {
                 // create a calculation
                 let operators = getOperations();
@@ -688,8 +693,8 @@
                 let first, second, result;
 
                 do {
-                    second = Math.floor(Math.random() * limit);
-                    first = Math.floor(Math.random() * limit);
+                    second = randomInteger(1, limit);
+                    first = randomInteger(1, limit);
                     switch (operator) {
                         case '+':
                             result = first + second;
@@ -901,7 +906,8 @@
                 let percent = Math.floor((success * 100) / count);
                 let congrat = 'Versuch es doch noch einmal!';
                 if (failure === 0) {
-                    congrat = CONGRATS[Math.floor(Math.random() * CONGRATS.length - 1)];
+                    random = Math.floor(Math.random() * CONGRATS.length);
+                    congrat = CONGRATS[random];
                 }
                 calculationDOM.classList.add('result');
                 calculationDOM.innerHTML = `Du hast ${failure} Fehler, das sind <b>${percent}%</b>! ${congrat}`;
