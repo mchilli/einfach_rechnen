@@ -1,0 +1,407 @@
+// Colors
+$success-color: #4caf50;
+$failure-color: #f44336;
+$result-color: #ffc107;
+$option-color: #2196f3;
+$contrast-color: #212121;
+$disabled-color: #dddddd;
+$background-color: #ffffff;
+
+// Gaps/Paddings
+$global-gap-size: 0.5em;
+$button-padding: 0.2em;
+
+// Transitions
+$transition-time: 0.1s;
+
+// Shadows
+$button-shadow: 1px 1px 3px $contrast-color;
+
+// History Item Min-Width
+$history-item-width: 160px;
+
+html {
+  font-family: monospace;
+  font-size: 16px;
+  user-select: none;
+}
+
+body {
+  height: 100vh;
+  max-width: 900px;
+  display: grid;
+  margin: 0 auto;
+  padding: $global-gap-size;
+  grid-template-rows: min-content min-content;
+  grid-row-gap: $global-gap-size;
+  box-sizing: border-box;
+}
+
+#header {
+  position: relative;
+  font-size: 1.6em;
+
+  .infos {
+    display: grid;
+    grid-template-columns: auto auto min-content min-content;
+    grid-gap: 0.5em;
+
+    .start-btn {
+      height: 1em;
+      width: 80px;
+      text-align: center;
+      padding: $button-padding;
+      background-color: $option-color;
+      color: $background-color;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: $button-shadow;
+    }
+
+    .menu-btn {
+      height: 1em;
+      width: 1em;
+      padding: $button-padding;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background-color: $option-color;
+      cursor: pointer;
+      box-shadow: $button-shadow;
+
+      .line,
+      &:before,
+      &:after {
+        content: '';
+        display: block;
+        height: 0.2em;
+        width: 1em;
+        background-color: $background-color;
+        transition: $transition-time linear;
+      }
+    }
+  }
+
+  .options {
+    display: grid;
+    transform: scaleY(0);
+    transform-origin: top right;
+    transition: $transition-time linear;
+    position: absolute;
+    right: 0;
+    margin-top: $global-gap-size;
+    padding: $global-gap-size;
+    background-color: $option-color;
+    color: $background-color;
+    grid-auto-flow: row;
+    grid-gap: $global-gap-size;
+    justify-content: space-evenly;
+    box-shadow: $button-shadow;
+
+    .operator {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .labeled-input {
+      display: grid;
+      grid-template-columns: min-content auto;
+      grid-gap: 0.2em;
+      justify-content: space-between;
+    }
+
+    input,
+    select {
+      cursor: pointer;
+    }
+
+    input[type='checkbox'] {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      appearance: none;
+      height: 2.3em;
+      width: 2.3em;
+      margin: 0;
+      color: $disabled-color;
+      background-color: $background-color;
+      box-shadow: $button-shadow;
+
+      &:checked {
+        color: $contrast-color;
+      }
+
+      &::after {
+        font-size: 2em;
+        font-weight: bold;
+      }
+
+      &:checked::after {
+        content: '✓';
+      }
+
+      &:focus {
+        outline: none;
+      }
+
+      &.plus::after {
+        content: '+';
+      }
+      &.minus::after {
+        content: '−';
+      }
+      &.multiply::after {
+        content: '×';
+      }
+      &.divide::after {
+        content: '÷';
+      }
+    }
+
+    input[type='number'] {
+      appearance: none;
+      height: fit-content;
+      width: 3em;
+      border: 0px;
+      padding: 0;
+      font-size: 1em;
+      box-shadow: $button-shadow;
+      text-indent: 0.1em;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    select {
+      appearance: none;
+      height: fit-content;
+      width: 1.6em;
+      border: 0px;
+      padding: 0;
+      font-size: 1em;
+      text-indent: 0.1em;
+      background-color: $background-color;
+      box-shadow: $button-shadow;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    input:disabled {
+      background-color: $disabled-color;
+      cursor: default;
+    }
+
+    .copyright {
+      text-align: right;
+      font-size: 0.5em;
+      a {
+        text-decoration: none;
+        color: $background-color;
+      }
+    }
+  }
+
+  &.open-options {
+    .menu-btn {
+      &:before {
+        transform: translate(0, 200%) rotate(45deg);
+      }
+      .line {
+        display: none;
+      }
+      &:after {
+        transform: translate(0, -200%) rotate(-45deg);
+      }
+    }
+
+    .options {
+      transform: scaleY(1);
+    }
+  }
+}
+
+#calculation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.1em;
+  font-size: 3em;
+  justify-content: center;
+  padding: $global-gap-size 0;
+  transition: $transition-time background-color linear;
+
+  &.correct {
+    background-color: $success-color;
+  }
+
+  &.failure {
+    background-color: $failure-color;
+  }
+
+  div {
+    box-sizing: border-box;
+    text-align: center;
+
+    &.search {
+      box-shadow: $button-shadow;
+      word-break: break-all;
+      cursor: pointer;
+    }
+  }
+
+  .fake-input {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    appearance: none;
+    border: 0;
+    opacity: 0;
+  }
+}
+
+#history {
+  overflow: auto;
+  padding: $global-gap-size 0;
+
+  .content {
+    display: grid;
+    height: 100%;
+    grid-template-columns: repeat(auto-fit, $history-item-width);
+    grid-gap: $global-gap-size;
+    align-content: start;
+    font-size: 1.6em;
+
+    .item {
+      display: flex;
+      width: auto;
+      height: fit-content;
+      justify-content: space-between;
+      gap: $button-padding;
+
+      .index {
+        box-shadow: $button-shadow;
+      }
+
+      .calculation {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+
+        div {
+          word-break: break-all;
+        }
+
+        .search {
+          text-decoration: underline;
+          text-decoration-color: $result-color;
+        }
+      }
+
+      &.correct {
+        .index {
+          background-color: $success-color;
+        }
+
+        .calculation .search {
+          text-decoration-color: $success-color;
+          text-decoration-style: double;
+        }
+      }
+
+      &.failure {
+        .index {
+          background-color: $failure-color;
+        }
+
+        .calculation .search {
+          text-decoration-color: $failure-color;
+          text-decoration-style: dotted;
+        }
+      }
+    }
+  }
+}
+
+#dialog {
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.5);
+
+  .container {
+    display: grid;
+    grid-template-rows: 1fr auto 1fr;
+    grid-gap: $global-gap-size;
+    background-color: $background-color;
+    box-shadow: $button-shadow;
+    margin: 0 $global-gap-size;
+    font-size: 1.2em;
+    transform: translate(0, 0) scale(1);
+    transform-origin: top right;
+    transition: $transition-time linear;
+
+    &.hidden {
+      transform: translate(0, calc(100vh / 2 * -1)) scale(0);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      background-color: $option-color;
+      color: $background-color;
+      padding: 0 $global-gap-size;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .content {
+      margin: 0 $global-gap-size;
+      text-align: center;
+
+      .input {
+        display: block;
+        margin: $global-gap-size auto;
+        appearance: none;
+        height: fit-content;
+        // border: 1px solid;
+        border: 0px;
+        padding: 0;
+        font-size: 1em;
+        box-shadow: $button-shadow;
+        text-indent: 0.1em;
+
+        &:focus {
+          outline: none;
+        }
+      }
+    }
+
+    .footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: $global-gap-size;
+      margin: $global-gap-size;
+      margin-top: 0;
+
+      .button {
+        display: flex;
+        align-items: center;
+        background-color: $option-color;
+        color: $background-color;
+        padding: $button-padding;
+        text-transform: uppercase;
+        cursor: pointer;
+        box-shadow: $button-shadow;
+      }
+    }
+  }
+}

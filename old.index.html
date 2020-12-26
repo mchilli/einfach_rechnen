@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<!-- Author: MCHilli -->
+<!-- Version: 1.0 -->
+<html lang="de" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Einfach Rechnen</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <style media="screen">
+      :root {
+        --success-color: #4caf50;
+        --failure-color: #f44336;
+        --result-color: #ffc107;
+        --option-color: #2196f3;
+        --contrast-color: #212121;
+        --background-color: #ffffff;
+      }
+      html {
+        font-family: arial;
+      }
+      body {
+        height: calc(100vh - 8px);
+        margin: 4px;
+        user-select: none;
+        line-height: 1;
+        display: grid;
+        grid-template-rows: min-content min-content;
+        grid-row-gap: 4px;
+        overflow: hidden;
+      }
+
+      .header {
+        display: grid;
+        grid-template-columns: minmax(auto, 320px) auto minmax(auto, 480px);
+        place-items: center;
+        height: fit-content;
+        font-size: 2.4em;
+      }
+      .header .options {
+        height: 100%;
+        width: 100%;
+        font-size: 0.5em;
+        font-weight: bold;
+        display: grid;
+        grid-template-columns: repeat(9, auto);
+        grid-column-gap: 4px;
+        place-items: center;
+      }
+      .header .options label {
+        justify-self: end;
+      }
+      .header .options input[type='checkbox'] {
+        margin: 0px;
+        cursor: pointer;
+        border: 1px solid;
+        height: 15px;
+        width: 15px;
+        -webkit-appearance: none;
+        box-shadow: 1px 1px 1px var(--contrast-color);
+      }
+      .header .options input[type='checkbox']:checked {
+        background-color: var(--option-color);
+      }
+      .header .options input[type='checkbox']:checked::after {
+        content: '';
+        display: block;
+        position: relative;
+        left: 4px;
+        top: 2px;
+        width: 3px;
+        height: 6px;
+        border: solid var(--contrast-color);
+        border-width: 0px 2px 2px 0;
+        -webkit-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+        transform: rotate(45deg);
+      }
+      .header .options input[type='number'] {
+        width: 30px;
+        font-family: sans-serif;
+        font-weight: bold;
+        background-color: var(--option-color);
+        border: 1px solid var(--contrast-color);
+        box-shadow: 1px 1px 1px var(--contrast-color);
+        -webkit-appearance: textfield;
+        -moz-appearance: textfield;
+      }
+      .header .options button {
+        grid-column: 9 / 10;
+        grid-row: 1 / 3;
+        -webkit-appearance: none;
+        cursor: pointer;
+        height: 48px;
+        font-weight: bold;
+        background-color: var(--option-color);
+        border: 1px solid var(--contrast-color);
+        box-shadow: 1px 1px 1px var(--contrast-color);
+      }
+
+      .mobile-input {
+        position: fixed;
+        top: 0;
+        width: 0;
+        border: 0;
+        opacity: 0;
+        -webkit-appearance: textfield;
+        -moz-appearance: textfield;
+      }
+
+      .calculation {
+        text-align: center;
+        box-sizing: border-box;
+        font-weight: bold;
+        border: 2px solid var(--contrast-color);
+        border-radius: 1rem;
+        user-select: none;
+        padding: 5px;
+      }
+      .calculation.success {
+        background-color: var(--success-color);
+      }
+      .calculation.failure {
+        background-color: var(--failure-color);
+      }
+      .calculation.result {
+        font-weight: normal;
+        background-color: var(--result-color);
+      }
+      .calculation div {
+        display: inline-block;
+        font-size: 6em;
+      }
+
+      .history-wrapper {
+        padding: 0 50px;
+        overflow: hidden;
+      }
+      .history {
+        height: 100%;
+        box-sizing: border-box;
+        font-size: 2em;
+        overflow: auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 250px);
+        grid-gap: 4px;
+        align-content: start;
+        justify-content: space-evenly;
+      }
+      .history div {
+        display: grid;
+        grid-template-columns: 1.5em auto;
+        height: max-content;
+      }
+      .history div span {
+        display: grid;
+        place-items: center;
+        width: 100%;
+        height: 100%;
+        padding: 8px 5px;
+        border: 2px solid var(--contrast-color);
+        box-sizing: border-box;
+      }
+      .history div span:first-child {
+        border-top-left-radius: 0.3em;
+        border-bottom-left-radius: 0.3em;
+        box-sizing: border-box;
+      }
+      .history div.success span:first-child {
+        background-color: var(--success-color);
+      }
+      .history div.failure span:first-child {
+        background-color: var(--failure-color);
+      }
+      .history div span:last-child {
+        border-left: unset;
+        border-top-right-radius: 0.3em;
+        border-bottom-right-radius: 0.3em;
+        word-break: break-all;
+      }
+
+      .dialog-wrapper {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: grid;
+        place-items: center;
+      }
+      .dialog-wrapper.invisible {
+        opacity: 0;
+      }
+      .dialog-header,
+      .dialog-footer {
+        min-width: 200px;
+        min-height: 20px;
+        padding: 10px 20px;
+        background-color: var(--background-color);
+        border: 2px solid var(--contrast-color);
+        box-shadow: 1px 1px 1px var(--contrast-color);
+      }
+      .dialog-header {
+        font-size: 30px;
+        font-weight: bold;
+        border-radius: 0.8rem;
+      }
+      .dialog-content {
+        margin: 0 15px;
+        padding: 10px;
+        background-color: var(--background-color);
+        border-left: 2px solid var(--contrast-color);
+        border-right: 4px solid var(--contrast-color);
+      }
+      .dialog-input {
+        display: block;
+        margin: 10px auto;
+        font-size: inherit;
+        padding: 0 15px;
+        border: 2px solid var(--contrast-color);
+        border-radius: 1em;
+      }
+      .dialog-input:focus {
+        outline: unset;
+      }
+      .dialog-footer {
+        text-align: right;
+        border-radius: 0.8rem;
+      }
+      .dialog-button {
+        display: inline-block;
+        margin: 0 10px;
+        padding: 2px;
+        background-color: var(--option-color);
+        border: 1px solid var(--contrast-color);
+        font-weight: bold;
+        cursor: pointer;
+        text-transform: uppercase;
+        box-shadow: 1px 1px 1px var(--contrast-color);
+      }
+      .header .options button:hover,
+      .header .options input[type='checkbox']:hover,
+      .header .options input[type='number']:hover,
+      .dialog-button:hover {
+        background-color: var(--result-color);
+      }
+      @media (pointer: coarse) {
+        .calculation div {
+          font-size: 3em;
+          border-radius: 0.3rem;
+        }
+        .history-wrapper {
+          padding: 0px 20px;
+        }
+        .history {
+          font-size: 1em;
+          grid-template-columns: repeat(auto-fill, 150px);
+        }
+        .history div {
+          grid-template-columns: 2em auto;
+        }
+      }
+      @media (pointer: coarse) and (max-aspect-ratio: 13/9) {
+        .header {
+          font-size: 1em;
+        }
+      }
+      @media (pointer: coarse) and (min-aspect-ratio: 13/9) {
+        .header {
+          font-size: 1.6em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="score"></div>
+      <div class="counter"></div>
+      <div class="options">
+        <label for="plus">&plus;</label>
+        <input type="checkbox" class="operator" checked name="plus" value="+" />
+        <label for="minus">&minus;</label>
+        <input type="checkbox" class="operator" checked name="minus" value="−" />
+        <label for="runs">Runden:</label>
+        <input type="number" class="runs" name="runs" value="20" min="3" max="50" />
+        <label for="funmode">Elternfrei:</label>
+        <input type="checkbox" class="funmode" name="funmode" />
+        <button type="button" class="start" name="start" onclick="newGame();">NEU</button>
+        <label for="multiply">&times;</label>
+        <input type="checkbox" class="operator" name="multiply" value="×" />
+        <label for="divide">&divide;</label>
+        <input type="checkbox" class="operator" name="divide" value="÷" />
+        <label for="limit">Limit:</label>
+        <input type="number" class="limit" name="limit" value="20" min="10" max="1000" />
+        <label for="advanced">Schwer:</label>
+        <input type="checkbox" class="advanced" name="advanced" />
+      </div>
+    </div>
+    <div class="calculation"></div>
+    <div class="history-wrapper">
+      <div class="history"></div>
+    </div>
+    <script type="text/javascript">
+      // write DOM elements to variables
+      let headerDOM = document.getElementsByClassName('header')[0];
+      let scoreDOM = headerDOM.getElementsByClassName('score')[0];
+      let counterDOM = headerDOM.getElementsByClassName('counter')[0];
+      let optionsDOM = headerDOM.getElementsByClassName('options')[0];
+      let optionInputs = optionsDOM.getElementsByTagName('input');
+      let operatorsList = optionsDOM.getElementsByClassName('operator');
+      let startButton = optionsDOM.getElementsByClassName('start')[0];
+      let runsInput = optionsDOM.getElementsByClassName('runs')[0];
+      let limitInput = optionsDOM.getElementsByClassName('limit')[0];
+      let funmodeInput = optionsDOM.getElementsByClassName('funmode')[0];
+      let advancedInput = optionsDOM.getElementsByClassName('advanced')[0];
+      let calculationDOM = document.getElementsByClassName('calculation')[0];
+      let historyDOM = document.getElementsByClassName('history')[0];
+
+      // global calculation DOM elements
+      let operatorDOM, equalDOM, possibleInputs, searchedInput, mobileInput;
+      // global options
+      let success, count, maxRuns, limit, funmode, advanced;
+      // values for parental check
+      const PASSWD = '[212,211,204,222,225,219]';
+      const ENIGMA = 'apdiuvnashüoiasj';
+      // strings for congrat zero failures
+      const CONGRATS = [
+        'Das ist allererste Sahne!!!',
+        'Das ist Super!!!',
+        'Wahnsinnig gut!!!',
+        'Besser geht es nicht, oder?',
+        'DER HAMMER!!!',
+        'Wow, Spitze!!!',
+      ];
+
+      let encrypt = (content) => {
+        // encrypt a given string
+        var result = [];
+        var passLen = ENIGMA.length;
+        for (var i = 0; i < content.length; i++) {
+          var passOffset = i % passLen;
+          var calAscii = content.charCodeAt(i) + ENIGMA.charCodeAt(passOffset);
+          result.push(calAscii);
+        }
+        return JSON.stringify(result);
+      };
+
+      let decrypt = (content) => {
+        // decrypt a given string
+        var result = [];
+        var str = '';
+        var codesArr = JSON.parse(content);
+        var passLen = ENIGMA.length;
+        for (var i = 0; i < codesArr.length; i++) {
+          var passOffset = i % passLen;
+          var calAscii = codesArr[i] - ENIGMA.charCodeAt(passOffset);
+          result.push(calAscii);
+        }
+        for (var i = 0; i < result.length; i++) {
+          var ch = String.fromCharCode(result[i]);
+          str += ch;
+        }
+        return str;
+      };
+
+      let writeLocalStorage = (key, content) => {
+        // write data to local storage
+        localStorage.setItem(key, content);
+      };
+
+      let readLocalStorage = (key) => {
+        // read data from local storage
+        return localStorage.getItem(key);
+      };
+
+      let removeLocalStorage = (key) => {
+        // remove key from local storage
+        localStorage.removeItem(key);
+      };
+
+      let isMobile = () => {
+        // return true if the device is a mobile device
+        if (
+          navigator.userAgent.match(/Android/i) ||
+          navigator.userAgent.match(/webOS/i) ||
+          navigator.userAgent.match(/iPhone/i) ||
+          navigator.userAgent.match(/iPad/i) ||
+          navigator.userAgent.match(/iPod/i) ||
+          navigator.userAgent.match(/BlackBerry/i) ||
+          navigator.userAgent.match(/Windows Phone/i)
+        ) {
+          return true;
+        } else {
+          return false;
+        }
+      };
+
+      let createDialog = (settings) => {
+        // generates a dialog based on the given settings
+        /*
+                settings {
+                    parent:         string      # parent object to append the dialog
+                    class:          string      # additional class for the dialog
+                    width:          int         # specify a min-width for the dialog
+                    alert:          boolean     # if the dialog is an alert, no cancel
+                    prompt:         boolean     # if the dialog a prompt, with input
+                    password:       boolean     # if the prompt input is hidden
+                    notification:   boolean     # if the dialog is a notification, autoclose 1s
+                    timeout:        int         # time in ms for autoclose the notification
+                    placeholder:    string      # placeholder value for prompt dialog
+                    title:          string      # title of the dialog
+                    content:        string      # content of the dialog
+                    onload:         function    # fired after dialog appended but before visible
+                    onunload:       function    # fired before dialog detached from parent
+                    onok:           function    # fired on ok button
+                    oncancel:       function    # fired on cancel button
+                    labelok:        string      # label for the ok button
+                    labelcancel:    string      # label for the cancel button
+                    buttons:        array of objects    # label:    string      # label of the button
+                                                        # function: function    # function of the button
+                }
+                */
+        let props = {
+          parent: 'body',
+          DOM: {},
+          width: undefined,
+          alert: false,
+          prompt: false,
+          password: false,
+          notification: false,
+          timeout: 1000,
+          title: 'Einfach Rechnen',
+          content: 'undefined',
+          onload: () => {
+            return true;
+          },
+          onunload: () => {
+            return true;
+          },
+          onok: () => {
+            return true;
+          },
+          oncancel: () => {
+            return true;
+          },
+          labelok: 'ok',
+          labelcancel: 'abbrechen',
+          buttons: [],
+          cleanup: () => {
+            props.onunload({ data: { dialog: props } });
+            props.DOM.wrapper.classList.add('invisible');
+            setTimeout(() => {
+              props.DOM.wrapper.remove();
+            }, 500);
+          },
+        };
+        for (let prop in settings) {
+          if (prop == 'buttons') {
+            for (let i = 0; i < settings[prop].length; i++) {
+              props.buttons.push(settings[prop][i]);
+            }
+          } else {
+            props[prop] = settings[prop];
+          }
+        }
+        if (!props.notification) {
+          props.buttons.unshift({
+            label: props.labelok,
+            function: props.onok,
+          });
+        }
+        if (!(props.alert || props.notification)) {
+          props.buttons.push({
+            label: props.labelcancel,
+            function: props.oncancel,
+          });
+        }
+        props.DOM.wrapper = document.createElement('DIV');
+        props.DOM.wrapper.classList.add('dialog-wrapper');
+        let dialog = document.createElement('DIV');
+        dialog.classList.add('dialog-container');
+        if (props.width) {
+          dialog.style.minwidth = props.width;
+        }
+        props.DOM.header = document.createElement('DIV');
+        props.DOM.header.classList.add('dialog-header');
+        props.DOM.header.innerHTML = props.title;
+        props.DOM.content = document.createElement('DIV');
+        props.DOM.content.classList.add('dialog-content');
+        props.DOM.content.innerHTML = props.content;
+        if (props.prompt) {
+          props.input = document.createElement('INPUT');
+          props.input.classList.add('dialog-input');
+          if (props.password) {
+            props.input.type = 'password';
+          } else {
+            props.input.type = 'text';
+            props.input.setAttribute('placeholder', props.placeholder);
+          }
+          props.DOM.content.append(props.input);
+          props.DOM.content.addEventListener('keyup', (e) => {
+            switch (e.key) {
+              case 'Enter':
+                if (props.onok({ ...props })) {
+                  props.cleanup();
+                }
+                break;
+              case 'Escape':
+                if (props.oncancel({ ...props })) {
+                  props.cleanup();
+                }
+                break;
+              default:
+                return;
+            }
+          });
+        }
+        props.DOM.footer = document.createElement('DIV');
+        props.DOM.footer.classList.add('dialog-footer');
+        for (let i = 0; i < props.buttons.length; i++) {
+          let btn = document.createElement('DIV');
+          btn.innerHTML = props.buttons[i].label;
+          btn.classList.add('dialog-button');
+          props.DOM.footer.append(btn);
+          if (typeof props.buttons[i].function === 'function') {
+            btn.addEventListener('click', (e) => {
+              if (props.buttons[i].function({ ...props })) {
+                props.cleanup();
+              }
+            });
+          }
+        }
+        dialog.append(props.DOM.header, props.DOM.content, props.DOM.footer);
+        props.DOM.wrapper.append(dialog);
+        props.DOM.wrapper.classList.add('invisible');
+        let parent = document.querySelector(props.parent);
+        parent.append(props.DOM.wrapper);
+        props.onload({ data: { dialog: props } });
+        setTimeout(function () {
+          props.DOM.wrapper.classList.remove('invisible');
+          if (props.notification) {
+            setTimeout(function () {
+              props.cleanup();
+            }, props.timeout);
+          } else if (props.prompt) {
+            setTimeout(function () {
+              props.input.focus();
+            }, 100);
+          }
+        }, 100);
+      };
+
+      let initializeGame = () => {
+        // initialize all necessary elements
+        if (readLocalStorage('settings')) {
+          restoreSettings();
+        } else {
+          storeSettings();
+        }
+        operatorDOM = document.createElement('DIV');
+        equalDOM = document.createElement('DIV');
+        equalDOM.innerHTML = '=';
+        let firstDOM = document.createElement('DIV');
+        let secondDOM = document.createElement('DIV');
+        let resultDOM = document.createElement('DIV');
+        possibleInputs = [firstDOM, secondDOM, resultDOM];
+        if (isMobile()) {
+          mobileInput = document.createElement('INPUT');
+          mobileInput.type = 'number';
+          mobileInput.classList.add('mobile-input');
+          document.body.append(mobileInput);
+        }
+        startGame();
+      };
+
+      let newGame = () => {
+        // check if the game starts for the first time else ask for password
+        let storedHistory = JSON.parse(readLocalStorage('storedHistory'));
+        if (storedHistory) {
+          if (funmode) {
+            removeLocalStorage('storedHistory');
+            startGame();
+          } else {
+            createDialog({
+              content:
+                'Der "Elternfrei" Modus ist deaktiviert,</br>du brauchst das Passwort zum neustarten?',
+              prompt: true,
+              password: true,
+              onok: (elem) => {
+                if (encrypt(elem.input.value.toLowerCase()) === PASSWD) {
+                  removeLocalStorage('storedHistory');
+                  startGame();
+                } else {
+                  createDialog({
+                    content: 'Falsches Passwort!',
+                    title: 'Oh Oh Oh',
+                    notification: true,
+                  });
+                  elem.input.value = '';
+                  elem.input.focus();
+                  return false;
+                }
+                return true;
+              },
+              oncancel: (elem) => {
+                restoreSettings();
+                return true;
+              },
+            });
+          }
+        } else {
+          startGame();
+        }
+      };
+
+      let startGame = () => {
+        // start the game
+        if (parseInt(runsInput.value) > parseInt(runsInput.max)) {
+          runsInput.value = runsInput.max;
+        } else if (parseInt(runsInput.value) < parseInt(runsInput.min)) {
+          runsInput.value = runsInput.min;
+        }
+        maxRuns = runsInput.value;
+        if (parseInt(limitInput.value) > parseInt(limitInput.max)) {
+          limitInput.value = limitInput.max;
+        } else if (parseInt(limitInput.value) < parseInt(limitInput.min)) {
+          limitInput.value = limitInput.min;
+        }
+        limit = limitInput.value;
+        funmode = false;
+        if (funmodeInput.checked) {
+          funmode = true;
+        }
+        advanced = false;
+        if (advancedInput.checked) {
+          advanced = true;
+        }
+
+        if (readLocalStorage('storedHistory')) {
+          restoreHistory();
+        } else {
+          success = 0;
+          count = 0;
+          createCalc(limit);
+          historyDOM.innerHTML = '';
+          calculationDOM.innerHTML = '';
+          calculationDOM.classList.remove('result');
+          calculationDOM.append(
+            possibleInputs[0],
+            operatorDOM,
+            possibleInputs[1],
+            equalDOM,
+            possibleInputs[2]
+          );
+          updateScore();
+          updateCounter();
+
+          storeSettings();
+
+          startButton.blur();
+        }
+
+        document.addEventListener('keydown', handleInput);
+
+        if (isMobile()) {
+          calculationDOM.addEventListener('click', (e) => {
+            mobileInput.focus();
+          });
+        }
+
+        for (let input of optionInputs) {
+          // input.addEventListener('change', storeSettings);
+          input.addEventListener('change', newGame);
+        }
+      };
+
+      let getOperations = () => {
+        // get the wanted operations for the calculation
+        let operators = [];
+        for (let item of operatorsList) {
+          if (item.checked) {
+            operators.push(item.value);
+          }
+        }
+        return operators;
+      };
+
+      let randomInteger = (min, max) => {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      };
+
+      let createCalc = (limit) => {
+        // create a calculation
+        let operators = getOperations();
+        let operator = operators[Math.floor(Math.random() * operators.length)];
+        let first, second, result;
+
+        do {
+          second = randomInteger(1, limit);
+          first = randomInteger(1, limit);
+          switch (operator) {
+            case '+':
+              result = first + second;
+              break;
+            case '−':
+              result = first - second;
+              break;
+            case '×':
+              result = first * second;
+              break;
+            case '÷':
+              result = first / second;
+              break;
+            default:
+          }
+        } while (
+          result > limit ||
+          result < 0 ||
+          isNaN(result) ||
+          result % 1 !== 0 ||
+          (operator === '÷' && (first === 0 || second < 2)) ||
+          (operator === '×' && (first < 2 || second < 2))
+        );
+
+        operatorDOM.innerHTML = operator;
+
+        let calculation = [first, second, result];
+        searchedInput = 2;
+        if (advanced) {
+          searchedInput = Math.floor(Math.random() * 3);
+        }
+        for (var i = 0; i < possibleInputs.length; i++) {
+          if (i === searchedInput) {
+            possibleInputs[i].innerHTML = '_';
+            continue;
+          }
+          possibleInputs[i].innerHTML = calculation[i];
+        }
+      };
+
+      let updateScore = () => {
+        // update the score in the header
+        let failure = count - success;
+        let percent = 100;
+        if (count > 0) {
+          percent = Math.floor((success * 100) / count);
+        }
+        // scoreDOM.innerHTML = `${success}/${count} ${failure} Fehler (${percent}%)`;
+        scoreDOM.innerHTML = `${failure} Fehler (${percent}%)`;
+      };
+
+      let updateCounter = () => {
+        // update the counter in the header
+        let max = maxRuns.toString().padStart(2, 0);
+        let counter;
+        if (success == max) {
+          counter = success.toString().padStart(2, 0);
+        } else {
+          counter = (success + 1).toString().padStart(2, 0);
+        }
+        counterDOM.innerHTML = `${counter}/${max}`;
+      };
+
+      let checkInput = (input) => {
+        // check if the calculation is correct
+        let operator = operatorDOM.innerHTML;
+        let first = parseInt(possibleInputs[0].innerHTML);
+        let second = parseInt(possibleInputs[1].innerHTML);
+        let result = parseInt(possibleInputs[2].innerHTML);
+
+        switch (operator) {
+          case '+':
+            check = first + second;
+            break;
+          case '−':
+            check = first - second;
+            break;
+          case '×':
+            check = first * second;
+            break;
+          case '÷':
+            check = first / second;
+            break;
+          default:
+        }
+
+        if (result === check) {
+          calculationDOM.classList.add('success');
+          toHistory(true);
+          success += 1;
+          updateCounter();
+          createCalc(limit);
+        } else {
+          calculationDOM.classList.add('failure');
+          toHistory(false);
+        }
+        count += 1;
+        updateScore();
+        storeHistory();
+        setTimeout(() => {
+          calculationDOM.classList.remove('success', 'failure');
+        }, 300);
+        if (success >= maxRuns) {
+          showResult();
+        }
+      };
+
+      let toHistory = (correct) => {
+        // write the last calculation to the history
+        let element = document.createElement('DIV');
+        let index = (success + 1).toString().padStart(2, 0);
+        let inputs = [];
+        for (let i = 0; i < possibleInputs.length; i++) {
+          let string = possibleInputs[i].innerHTML;
+          if (i === searchedInput) {
+            string = `{${possibleInputs[i].innerHTML}}`;
+          }
+          inputs.push(string);
+        }
+        element.innerHTML = `<span>${index}</span> <span>${inputs[0]}${operatorDOM.innerHTML}${inputs[1]}=${inputs[2]}</span>`;
+
+        if (correct) {
+          element.classList.add('success');
+        } else {
+          element.classList.add('failure');
+        }
+
+        let lastElem = historyDOM.getElementsByTagName('DIV')[0];
+        historyDOM.insertBefore(element, lastElem);
+
+        possibleInputs[searchedInput].innerHTML = '_';
+      };
+
+      let storeHistory = () => {
+        // store the game to the localStorage
+        let calculation = {
+          first: possibleInputs[0].innerHTML,
+          operator: operatorDOM.innerHTML,
+          second: possibleInputs[1].innerHTML,
+          result: possibleInputs[2].innerHTML,
+          search: searchedInput,
+        };
+        let data = {
+          success: success,
+          count: count,
+          maxRuns: maxRuns,
+          limit: limit,
+          funmode: funmode,
+          advanced: advanced,
+        };
+        let history = [];
+        let historyElements = historyDOM.getElementsByTagName('DIV');
+        for (var i = 0; i < historyElements.length; i++) {
+          let elemClass = historyElements[i].classList;
+          let elemHTML = historyElements[i].innerHTML;
+          history.push({
+            class: elemClass,
+            html: elemHTML,
+          });
+        }
+        let storedHistory = {
+          calculation: calculation,
+          data: data,
+          history: history,
+        };
+        writeLocalStorage('storedHistory', JSON.stringify(storedHistory));
+      };
+
+      let restoreHistory = () => {
+        // restore the last calculation to the history
+        let storedHistory = JSON.parse(readLocalStorage('storedHistory'));
+        // restore calculation
+        possibleInputs[0].innerHTML = storedHistory.calculation.first;
+        operatorDOM.innerHTML = storedHistory.calculation.operator;
+        possibleInputs[1].innerHTML = storedHistory.calculation.second;
+        possibleInputs[2].innerHTML = storedHistory.calculation.result;
+        searchedInput = storedHistory.calculation.search;
+        // append elements to dom
+        calculationDOM.append(
+          possibleInputs[0],
+          operatorDOM,
+          possibleInputs[1],
+          equalDOM,
+          possibleInputs[2]
+        );
+        // restore data
+        success = storedHistory.data.success;
+        count = storedHistory.data.count;
+        // restore history
+        for (var i = 0; i < storedHistory.history.length; i++) {
+          let element = document.createElement('DIV');
+          let index = storedHistory.history[i].html.split(' ')[0];
+          element.innerHTML = `${storedHistory.history[i].html}`;
+
+          element.classList.add(storedHistory.history[i].class[0]);
+          historyDOM.append(element);
+        }
+        updateScore();
+        updateCounter();
+        if (success >= maxRuns) {
+          showResult();
+        }
+      };
+
+      let showResult = () => {
+        // shpw the results at the end of the game
+        calculationDOM.classList.remove('success', 'failure');
+        let failure = count - success;
+        let percent = Math.floor((success * 100) / count);
+        let congrat = 'Versuch es doch noch einmal!';
+        if (failure === 0) {
+          random = Math.floor(Math.random() * CONGRATS.length);
+          congrat = CONGRATS[random];
+        }
+        calculationDOM.classList.add('result');
+        calculationDOM.innerHTML = `Du hast ${failure} Fehler, das sind <b>${percent}%</b>! ${congrat}`;
+        document.removeEventListener('keydown', handleInput);
+      };
+
+      let handleInput = (e) => {
+        // handle keyboard inputs
+        // check if input element has focus to prevent wrong input
+        let activeButtons = [startButton];
+        let activeInputs = [runsInput, limitInput, startButton];
+        if (activeButtons.includes(document.activeElement)) {
+          document.activeElement.blur();
+        } else if (activeInputs.includes(document.activeElement)) {
+          return;
+        }
+
+        let key = e.key;
+        if (!isNaN(key)) {
+          if (possibleInputs[searchedInput].innerHTML === '_') {
+            possibleInputs[searchedInput].innerHTML = '';
+          }
+          possibleInputs[searchedInput].innerHTML += key;
+        } else {
+          let input;
+          switch (key) {
+            case 'Backspace':
+              input = possibleInputs[searchedInput].innerHTML;
+              if (input.length > 1) {
+                possibleInputs[searchedInput].innerHTML = input.substring(0, input.length - 1);
+              } else {
+                possibleInputs[searchedInput].innerHTML = '_';
+              }
+              break;
+            case 'Enter':
+              input = possibleInputs[searchedInput].innerHTML;
+              if (input !== '' && input !== '_') {
+                checkInput(input);
+              }
+              if (isMobile()) {
+                mobileInput.value = '';
+              }
+              break;
+            default:
+          }
+        }
+      };
+
+      let storeSettings = (e) => {
+        // store the current settings
+        let settings = {
+          runs: runsInput.value,
+          limit: limitInput.value,
+          funmode: funmodeInput.checked,
+          advanced: advancedInput.checked,
+        };
+        for (let item of operatorsList) {
+          settings[item.name] = item.checked;
+        }
+        writeLocalStorage('settings', JSON.stringify(settings));
+      };
+
+      let restoreSettings = () => {
+        // restore the last settings
+        let settings = JSON.parse(readLocalStorage('settings'));
+        for (let item in settings) {
+          let element = optionsDOM.querySelector(`[name=${item}]`);
+          if (typeof settings[item] === 'boolean') {
+            element.checked = settings[item];
+          } else {
+            element.value = settings[item];
+          }
+        }
+      };
+
+      initializeGame();
+    </script>
+  </body>
+</html>

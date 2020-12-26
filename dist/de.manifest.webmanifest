@@ -1,0 +1,33 @@
+{
+  "lang": "de",
+  "dir": "ltr",
+  "name": "Einfach Rechnen",
+  "short_name": "Rechnen",
+  "description": "Eine einfache Kopfrechnen Seite",
+  "icons": [
+    {
+      "src": "../img/icon-64.png",
+      "type": "image/png",
+      "sizes": "64x64"
+    },
+    {
+      "src": "../img/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "../img/icon-256.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    },
+    {
+      "src": "../img/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "../index.html",
+  "display": "standalone",
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff"
+}
