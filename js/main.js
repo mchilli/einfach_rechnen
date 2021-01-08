@@ -770,15 +770,19 @@ class Game {
       });
     }
 
-    // keyboard interaction
-    document.addEventListener('keydown', (e) => {
-      this.keyHandler(e.key);
-    });
-
+    // keyboard interaction &
     // display the keyboard on mobile devices
     if (isMobileDevice()) {
+      document.addEventListener('keyup', (e) => {
+        // split from normal devices because of samsung input fix
+        this.keyHandler(e.key);
+      });
       this.dom.calculation.addEventListener('click', (e) => {
         this.challenge.dom.input.focus();
+      });
+    } else {
+      document.addEventListener('keydown', (e) => {
+        this.keyHandler(e.key);
       });
     }
   }
@@ -838,6 +842,12 @@ class Game {
 
   // handle keyboard inputs
   keyHandler(key) {
+    if (isMobileDevice() && key === 'Unidentified') {
+      // fix for Samsung Mobile Devices, where the onscreen keyboard doesn't fire the right keycode
+      // https://stackoverflow.com/questions/36753548/keycode-on-android-is-always-229
+      key = this.challenge.dom.input.value;
+      this.challenge.dom.input.value = '';
+    }
     if (!this.isStarted || this.endReached || this.dom.header.classList.contains('open-options')) {
       return;
     }
