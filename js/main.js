@@ -524,6 +524,7 @@ class Challenge {
       }
     } while (
       result > settings.maxLimit ||
+      result < settings.minLimit ||
       result < 0 ||
       isNaN(result) ||
       result % 1 !== 0 ||
